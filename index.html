@@ -32,7 +32,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 1s ease;
+            transition: opacity 1.1s ease;
             font-family: 'Georgia', 'Times New Roman', serif;
             color: #222;
             text-align: center;
@@ -42,45 +42,100 @@
             opacity: 0;
             pointer-events: none;
         }
-        #loadingScreen .loader {
+        #loadingScreen .ls-title {
             display: flex;
-            gap: 8px;
-            margin-bottom: 30px;
+            align-items: baseline;
+            justify-content: center;
+            flex-wrap: nowrap;
+            width: 100%;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: clamp(50px, 16.5vw, 250px);
+            font-weight: 400;
+            font-style: normal;
+            letter-spacing: -0.005em;
+            color: #111;
+            line-height: 1;
+            white-space: nowrap;
         }
-        #loadingScreen .loader span {
+        #loadingScreen .ls-float {
             display: inline-block;
-            width: 12px;
-            height: 12px;
-            background: #222;
-            border-radius: 50%;
-            animation: bounce 1.2s ease-in-out infinite;
+            animation: lsFloat 3.8s ease-in-out infinite;
         }
-        #loadingScreen .loader span:nth-child(2) { animation-delay: 0.15s; }
-        #loadingScreen .loader span:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-            40% { transform: scale(1); opacity: 1; }
+        #loadingScreen .ls-title .ls-float:nth-child(1) { animation-delay: 0s; animation-duration: 3.6s; }
+        #loadingScreen .ls-title .ls-float:nth-child(2) { animation-delay: 0.25s; animation-duration: 4.2s; }
+        #loadingScreen .ls-title .ls-float:nth-child(3) { animation-delay: 0.5s; animation-duration: 3.3s; }
+        #loadingScreen .ls-title .ls-float:nth-child(4) { animation-delay: 0.75s; animation-duration: 4s; }
+        #loadingScreen .ls-title .ls-float:nth-child(5) { animation-delay: 1s; animation-duration: 3.5s; }
+        #loadingScreen .ls-title .ls-float:nth-child(6) { animation-delay: 1.25s; animation-duration: 4.4s; }
+        #loadingScreen .ls-title .ls-float:nth-child(7) { animation-delay: 1.5s; animation-duration: 3.7s; }
+        @keyframes lsFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        #loadingScreen .ls-jump {
+            display: inline-block;
+            will-change: transform;
+        }
+        #loadingScreen .ls-title span.ls-letter {
+            display: inline-block;
+        }
+        #loadingScreen .ls-o {
+            position: relative;
+            width: 0.62em;
+            height: 0.62em;
+            margin: 0 0.005em;
+            transform: translateY(0.1em);
+        }
+        #loadingScreen .ls-o-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        #loadingScreen .ls-o-track {
+            fill: none;
+            stroke: rgba(0, 0, 0, 0.12);
+            stroke-width: 17;
+        }
+        #loadingScreen .ls-o-fill {
+            fill: none;
+            stroke: #111;
+            stroke-width: 17;
+            stroke-linecap: round;
+            stroke-dasharray: 263.9;
+            stroke-dashoffset: 263.9;
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: lsSpin 1.9s linear infinite;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        @keyframes lsSpin {
+            to { transform: rotate(360deg); }
         }
         #loadingScreen .status {
-            font-size: 16px;
-            letter-spacing: 0.06em;
-            font-weight: 300;
-            opacity: 0.7;
-            margin-top: 8px;
+            font-size: 14px;
+            letter-spacing: 0.2em;
+            font-weight: 400;
+            opacity: 0.45;
+            margin-top: 26px;
+            text-transform: uppercase;
         }
-        #loadingScreen .progress-bar {
-            width: 200px;
-            height: 2px;
-            background: #e0e0e0;
-            margin-top: 20px;
-            border-radius: 2px;
-            overflow: hidden;
+        #loadingScreen .progress-squares {
+            position: fixed;
+            left: 50%;
+            bottom: 42px;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 9px;
         }
-        #loadingScreen .progress-bar .fill {
-            height: 100%;
-            width: 0%;
-            background: #222;
-            transition: width 0.2s linear;
+        #loadingScreen .progress-squares .sq {
+            width: 15px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            transition: background 0.25s ease;
+            will-change: transform;
+        }
+        #loadingScreen .progress-squares .sq.filled {
+            background: #111;
         }
 
         /* ===== TOP BAR ===== */
@@ -96,7 +151,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 28px;
-            z-index: 999;
+            z-index: 1000000;
             font-size: 18px;
             letter-spacing: 0.04em;
             transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
@@ -124,6 +179,12 @@
             font-size: 20px;
             letter-spacing: 0.08em;
             opacity: 0.7;
+            cursor: pointer;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+        #topBar .title:hover {
+            opacity: 1;
         }
         #topBar .rightBtns {
             display: flex;
@@ -217,6 +278,22 @@
             text-align: center;
             justify-content: center;
             gap: 40px;
+        }
+        /* Вопрос и варианты ответов появляются с задержкой — сразу после
+           экрана загрузки должен остаться просто белый фон, и только
+           потом (медленно) проявиться вопрос. */
+        #pageStart .question,
+        #pageStart .options {
+            opacity: 0;
+            pointer-events: none;
+            will-change: opacity;
+            transition: opacity 2.4s ease-out;
+        }
+        #pageStart.content-visible .question,
+        #pageStart.content-visible .options {
+            opacity: 1;
+            pointer-events: auto;
+            transition: opacity 2.4s ease-out;
         }
         #pageStart .question {
             font-size: clamp(40px, 10vw, 86px);
@@ -777,12 +854,12 @@
                 font-size: clamp(18px, 4.5vw, 28px);
                 padding: 20px;
             }
-            #loadingScreen .loader span {
-                width: 10px;
-                height: 10px;
+            #loadingScreen .ls-title {
+                font-size: clamp(38px, 15vw, 90px);
             }
-            #loadingScreen .progress-bar {
-                width: 150px;
+            #loadingScreen .progress-squares .sq {
+                width: 12px;
+                height: 12px;
             }
         }
         @media (max-width: 400px) {
@@ -801,21 +878,232 @@
                 height: 54px;
             }
         }
+
+        /* ===== ШОШ (webmeji-персонаж) ===== */
+        .webmeji-container {
+            position: fixed;
+            width: 100px;
+            height: auto;
+            overflow: visible;
+            z-index: 1000000;
+            pointer-events: auto;
+        }
+        .webmeji-container img {
+            width: 100%;
+            height: auto;
+            user-select: none;
+            pointer-events: none;
+            display: block;
+            transform-origin: center;
+        }
+        @media (max-width: 768px) {
+            .webmeji-container {
+                width: 56px;
+                height: auto;
+            }
+        }
+
+        #shoshFloatingBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000002;
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            color: #111;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 14px;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: all 0.25s ease;
+        }
+        #shoshFloatingBtn:hover {
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            border-color: rgba(0, 0, 0, 0.85);
+            transform: scale(1.04);
+        }
+        #shoshFloatingBtn.active {
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+        }
+
+        #shoshPanel {
+            position: fixed;
+            bottom: 68px;
+            right: 20px;
+            width: 270px;
+            max-height: calc(100vh - 110px);
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            padding: 14px 16px;
+            z-index: 1000001;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            overflow: hidden;
+            cursor: default;
+            user-select: none;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #111;
+        }
+        #shoshPanel.show {
+            display: flex;
+            animation: shoshPanelSlide 0.25s ease;
+        }
+        @keyframes shoshPanelSlide {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        #shoshPanel .panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            letter-spacing: 0.1em;
+            color: #111;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 8px;
+            cursor: grab;
+        }
+        #shoshPanel .panel-title:active { cursor: grabbing; }
+        #shoshPanel .panel-title .close-btn {
+            cursor: pointer;
+            font-size: 17px;
+            color: rgba(0, 0, 0, 0.4);
+            background: none;
+            border: none;
+            padding: 0 4px;
+            font-family: inherit;
+        }
+        #shoshPanel .panel-title .close-btn:hover { color: #111; }
+        #shoshPanel .creature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #shoshPanel .creature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            padding: 8px 10px;
+            flex-wrap: wrap;
+        }
+        #shoshPanel .creature-item .preview {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+        #shoshPanel .creature-item .info {
+            flex: 1;
+            font-size: 13px;
+            letter-spacing: 0.03em;
+            min-width: 40px;
+        }
+        #shoshPanel .creature-item .info-count {
+            color: rgba(0, 0, 0, 0.45);
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        #shoshPanel .size-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        #shoshPanel .size-control button {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            color: #111;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1;
+            font-family: inherit;
+            transition: background 0.15s, color 0.15s;
+        }
+        #shoshPanel .size-control button:hover { background: #111; color: #fff; }
+        #shoshPanel .size-control .size-label {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.55);
+            min-width: 32px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0 4px;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+        #shoshPanel .size-control .size-label:hover { background: rgba(0, 0, 0, 0.06); color: #111; }
+        #shoshPanel .actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        #shoshPanel .actions button {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            color: #111;
+            padding: 2px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            line-height: 1.4;
+            transition: background 0.15s, color 0.15s;
+        }
+        #shoshPanel .actions button:hover { background: #111; color: #fff; }
+        #shoshPanel .panel-footer {
+            font-size: 10px;
+            color: rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            padding-top: 6px;
+        }
+        #shoshPanel .panel-footer a { color: rgba(0, 0, 0, 0.55); text-decoration: none; }
+        #shoshPanel .panel-footer a:hover { color: #111; text-decoration: underline; }
+        @media (max-width: 600px) {
+            #shoshFloatingBtn {
+                font-size: 12px;
+                padding: 6px 16px;
+                bottom: 14px;
+                right: 14px;
+            }
+            #shoshPanel {
+                width: calc(100vw - 28px);
+                right: 14px;
+                bottom: 60px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <!-- ===== LOADING SCREEN ===== -->
     <div id="loadingScreen">
-        <div class="loader">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="ls-title">
+            <span class="ls-float"><span class="ls-jump ls-letter">П</span></span><span class="ls-float"><span class="ls-jump ls-o"><svg class="ls-o-svg" viewBox="0 0 100 100"><circle class="ls-o-track" cx="50" cy="50" r="42"/><circle class="ls-o-fill" id="lsOFill1" cx="50" cy="50" r="42"/></svg></span></span><span class="ls-float"><span class="ls-jump ls-letter">д</span></span><span class="ls-float"><span class="ls-jump ls-letter">а</span></span><span class="ls-float"><span class="ls-jump ls-letter">р</span></span><span class="ls-float"><span class="ls-jump ls-letter">о</span></span><span class="ls-float"><span class="ls-jump ls-letter">к</span></span>
         </div>
-        <div class="status" id="loadingStatus">Загрузка …</div>
-        <div class="progress-bar">
-            <div class="fill" id="loadingProgress"></div>
-        </div>
+        <div class="status"><span class="ls-jump" id="loadingStatus">0%</span></div>
+        <div class="progress-squares" id="loadingProgress"></div>
     </div>
 
     <!-- ===== SVG DEFS (для водяных эффектов) ===== -->
@@ -825,7 +1113,7 @@
 
     <!-- ===== TOP BAR ===== -->
     <header id="topBar">
-        <span class="title">Подарок</span>
+        <span class="title" id="topBarTitle">Подарок</span>
         <div class="rightBtns">
             <button class="topBtn musicBtn" id="btnMusic">♪ МОРЕ ВНУТРИ</button>
             <button class="topBtn" id="btnHome">К началу</button>
@@ -833,6 +1121,7 @@
             <button class="topBtn" id="btnStory">Путешествия Черепахи</button>
             <button class="topBtn" id="btnHouse">"Дом на берегу моря"</button>
             <button class="topBtn" id="btnGift">ДОПОЛНИТЕЛЬНЫЙ ПОДАРОК. СДЕЛАННЫЙ 100% БЕЗ НЕЙРОНОК</button>
+            <button class="topBtn" id="btnLoadingScreen">К экрану загрузки</button>
             <button class="topBtn iconBtn show" id="btnFullscreen" title="Полный экран">⛶</button>
         </div>
     </header>
@@ -888,6 +1177,19 @@
     <audio id="bgMusic" loop preload="auto"><source src="media/kosmos.mp3" type="audio/mpeg"></audio>
     <audio id="puzzleMusic" loop preload="auto"><source src="media/more.mp3" type="audio/mpeg"></audio>
     <audio id="vnutriMusic" loop preload="auto"><source src="media/vnutri.mp3" type="audio/mpeg"></audio>
+
+    <!-- ===== ШОШ (кнопка вызова панели персонажа) ===== -->
+    <button id="shoshFloatingBtn" title="Позвать Шоша">Шош</button>
+    <div id="shoshPanel">
+        <div class="panel-title" id="shoshPanelTitle">
+            <span>ШОШ</span>
+            <button class="close-btn" id="shoshPanelClose">✕</button>
+        </div>
+        <div class="creature-list" id="shoshCreatureList"></div>
+        <div class="panel-footer">
+            Персонаж на основе <a href="https://github.com/lars-rooij/webmeji/" target="_blank" rel="noopener">webmeji</a> (lars-rooij)
+        </div>
+    </div>
 
     <!-- ============================================================ -->
     <!-- ===== JAVASCRIPT ===== -->
@@ -962,6 +1264,7 @@
         const btnStory = $('btnStory');
         const btnGift = $('btnGift');
         const btnMusic = $('btnMusic');
+        const btnLoadingScreen = $('btnLoadingScreen');
         const optionsContainer = $('optionsContainer');
         const abstractCanvas = $('abstractCanvas');
         const ctx = abstractCanvas.getContext('2d');
@@ -989,19 +1292,149 @@
         const loadingScreen = $('loadingScreen');
         const loadingStatus = $('loadingStatus');
         const loadingProgress = $('loadingProgress');
+        const lsOFill1 = $('lsOFill1');
+        const LS_CIRC = 263.9; // 2 * PI * 42
+        const LS_SQUARES_COUNT = 12;
 
-        function updateLoading(loaded, total) {
-            const percent = Math.round((loaded / total) * 100);
-            loadingProgress.style.width = percent + '%';
-            loadingStatus.textContent = `Загрузка … ${percent}%`;
+        // Экран загрузки держим минимум 5 секунд с самого начала —
+        // так открытие выглядит красиво даже при мгновенной локальной загрузке.
+        const MIN_LOADING_TIME = 5000;
+        const loadingStartTime = performance.now();
+        const loadState = { loaded: 0, total: 0 };
+        let loadingActive = true;
+
+        // создаём квадраты прогресс-бара
+        (function buildLoadingSquares() {
+            for (let i = 0; i < LS_SQUARES_COUNT; i++) {
+                const sq = document.createElement('div');
+                sq.className = 'sq ls-jump';
+                loadingProgress.appendChild(sq);
+            }
+        })();
+        const loadingSquares = loadingProgress.querySelectorAll('.sq');
+
+        function renderLoadingPercent(percent) {
+            const offset = LS_CIRC - (LS_CIRC * percent / 100);
+            lsOFill1.style.strokeDashoffset = offset;
+            loadingStatus.textContent = `${percent}%`;
+            const filledCount = Math.round((percent / 100) * LS_SQUARES_COUNT);
+            loadingSquares.forEach((sq, i) => {
+                sq.classList.toggle('filled', i < filledCount);
+            });
         }
 
+        // Прогресс = минимум из "прошло времени" и "реально загружено".
+        // Если грузить по факту нечего (кеш/локальный запуск), реальная доля
+        // сразу равна 1, и заполнение идёт равномерно по времени все 5 секунд.
+        // Если реальная загрузка вдруг длится дольше 5 секунд — прогресс
+        // честно следует за ней, а не застревает на 100%.
+        function loadingTick() {
+            if (!loadingActive) return;
+            const elapsed = performance.now() - loadingStartTime;
+            const timeFraction = Math.min(1, elapsed / MIN_LOADING_TIME);
+            const realFraction = loadState.total > 0 ? (loadState.loaded / loadState.total) : 1;
+            const percent = Math.round(Math.min(timeFraction, realFraction) * 100);
+            renderLoadingPercent(percent);
+            requestAnimationFrame(loadingTick);
+        }
+        requestAnimationFrame(loadingTick);
+
         function hideLoading() {
+            loadingActive = false;
+            renderLoadingPercent(100);
             loadingScreen.classList.add('hidden');
             setTimeout(() => {
                 loadingScreen.style.display = 'none';
             }, 1000);
         }
+
+        // ============================================================
+        //  БЕСКОНЕЧНЫЙ ЭКРАН ЗАГРУЗКИ
+        //  (запускается кнопкой «К экрану загрузки» из верхней панели —
+        //  кольцо и прогресс-бар заполняются, затем сбрасываются и
+        //  заполняются заново, по кругу, и экран больше не скрывается)
+        // ============================================================
+        let infiniteLoadingActive = false;
+        let infiniteLoadingRafId = null;
+        const INFINITE_LOADING_CYCLE = 4000; // мс на один цикл заполнения
+
+        function startInfiniteLoading() {
+            if (infiniteLoadingActive) return; // уже крутится
+
+            // на всякий случай останавливаем обычный (одноразовый) прогресс
+            loadingActive = false;
+
+            topBar.classList.remove('dark');
+            loadingScreen.style.display = 'flex';
+            loadingScreen.classList.remove('hidden');
+
+            infiniteLoadingActive = true;
+            const cycleStart = performance.now();
+
+            function infiniteLoadingTick() {
+                if (!infiniteLoadingActive) return;
+                const elapsed = performance.now() - cycleStart;
+                const fraction = (elapsed % INFINITE_LOADING_CYCLE) / INFINITE_LOADING_CYCLE;
+                const percent = Math.round(fraction * 100);
+                renderLoadingPercent(percent);
+                infiniteLoadingRafId = requestAnimationFrame(infiniteLoadingTick);
+            }
+            infiniteLoadingRafId = requestAnimationFrame(infiniteLoadingTick);
+        }
+
+        function stopInfiniteLoading() {
+            if (!infiniteLoadingActive) return;
+            infiniteLoadingActive = false;
+            if (infiniteLoadingRafId) {
+                cancelAnimationFrame(infiniteLoadingRafId);
+                infiniteLoadingRafId = null;
+            }
+            loadingScreen.classList.add('hidden');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 1000);
+        }
+
+        // ============================================================
+        //  LOADING SCREEN — элементы отпрыгивают от клика и возвращаются
+        // ============================================================
+        function lsRepel(x, y) {
+            const targets = loadingScreen.querySelectorAll('.ls-jump');
+            const maxRadius = 380;
+            const maxPush = 85;
+            targets.forEach((el) => {
+                const rect = el.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                let dx = cx - x;
+                let dy = cy - y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > maxRadius) return;
+                if (dist < 1) { dx = (Math.random() - 0.5); dy = (Math.random() - 0.5); dist = 1; }
+                const force = 1 - dist / maxRadius;
+                const push = force * maxPush;
+                const tx = (dx / dist) * push;
+                const ty = (dy / dist) * push;
+                el.style.transition = 'transform 0.16s cubic-bezier(.22,.85,.4,1)';
+                el.style.transform = `translate(${tx}px, ${ty}px)`;
+                clearTimeout(el._lsJumpTimeout);
+                el._lsJumpTimeout = setTimeout(() => {
+                    el.style.transition = 'transform 0.85s cubic-bezier(.34,1.56,.64,1)';
+                    el.style.transform = 'translate(0, 0)';
+                }, 90);
+            });
+        }
+        loadingScreen.addEventListener('click', (e) => {
+            lsRepel(e.clientX, e.clientY);
+            playWoosh(0.04);
+        });
+
+        // Музыка запускается уже с экрана загрузки — по первому клику где угодно
+        document.addEventListener('click', () => {
+            initAudio();
+            bgMusic.play().catch(() => {});
+        }, { once: true });
+
 
         // ============================================================
         //  PRELOAD IMAGES
@@ -1030,13 +1463,15 @@
                 'media/cherepaha_peace_0002.png',
                 // gift image
                 'media/cherepaha_more.jpg',
+                // Шош (кадры персонажа)
+                ...SHOSH_FRAME_NUMBERS.map(n => `media/shosh/shime${n}.png`),
             ];
 
-            const total = imageList.length;
-            let loaded = 0;
+            loadState.total = imageList.length;
+            loadState.loaded = 0;
 
             return new Promise((resolve) => {
-                if (total === 0) {
+                if (loadState.total === 0) {
                     resolve();
                     return;
                 }
@@ -1044,15 +1479,13 @@
                 imageList.forEach((src) => {
                     const img = new Image();
                     img.onload = () => {
-                        loaded++;
-                        updateLoading(loaded, total);
-                        if (loaded === total) resolve();
+                        loadState.loaded++;
+                        if (loadState.loaded === loadState.total) resolve();
                     };
                     img.onerror = () => {
                         // всё равно считаем загруженным, чтобы не зависнуть
-                        loaded++;
-                        updateLoading(loaded, total);
-                        if (loaded === total) resolve();
+                        loadState.loaded++;
+                        if (loadState.loaded === loadState.total) resolve();
                     };
                     img.src = src;
                 });
@@ -1334,11 +1767,17 @@
         // ============================================================
         //  PAGE NAVIGATION
         // ============================================================
+        let pendingStartReveal = true; // при самом первом показе стартовой страницы (после экрана загрузки) вопрос появляется с задержкой
+
         function showPage(id) {
+            stopInfiniteLoading();
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active', 'fade-out'));
             const el = $(id);
             if (el) el.classList.add('active');
             state.page = id.replace('page', '').toLowerCase();
+            if (id === 'pageStart' && !pendingStartReveal) {
+                pageStart.classList.add('content-visible');
+            }
             const darkPages = ['pageAbstract', 'pageFinalStory', 'pagePuzzle', 'pageGiftPuzzle', 'pageGift'];
             if (darkPages.includes(id)) {
                 topBar.classList.add('dark');
@@ -1352,6 +1791,7 @@
                 btnAbstract.classList.add('show');
                 btnHouse.classList.add('show');
                 btnStory.classList.add('show');
+                btnLoadingScreen.classList.add('show');
             } else {
                 btnHome.classList.remove('show');
                 btnGift.classList.remove('show');
@@ -1359,6 +1799,7 @@
                 btnAbstract.classList.remove('show');
                 btnHouse.classList.remove('show');
                 btnStory.classList.remove('show');
+                btnLoadingScreen.classList.remove('show');
             }
             if (!vnutriPlaying) {
                 if (id === 'pagePuzzle' || id === 'pageGiftPuzzle' || id === 'pageFinalStory') {
@@ -1369,7 +1810,9 @@
                     puzzleMusic.play().catch(() => {});
                 } else if (id === 'pageStart') {
                     puzzleMusic.pause();
-                    bgMusic.currentTime = 0;
+                    if (bgMusic.paused) {
+                        bgMusic.currentTime = 0;
+                    }
                     bgMusic.play().catch(() => {});
                 } else {
                     if (id !== 'pagePuzzle' && id !== 'pageGiftPuzzle') {
@@ -1501,6 +1944,7 @@
         btnHouse.addEventListener('click', goToHouseAgain);
         btnStory.addEventListener('click', goToStoryAgain);
         btnGift.addEventListener('click', goToGiftPuzzle);
+        btnLoadingScreen.addEventListener('click', startInfiniteLoading);
 
         // ============================================================
         //  FULLSCREEN
@@ -2028,6 +2472,24 @@
             playWoosh(0.05);
         }
 
+        function blackFadeTransitionOverlay(callback) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText =
+                'position:fixed;inset:0;z-index:99999;background:#000;opacity:0;pointer-events:none;transition:opacity 0.45s ease;';
+            document.body.appendChild(overlay);
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
+            setTimeout(() => {
+                callback();
+                requestAnimationFrame(() => {
+                    overlay.style.transition = 'opacity 1.8s ease';
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.remove(), 1900);
+                });
+            }, 500);
+        }
+
         function resetFsButtonAndContent() {
             fsBtn.innerHTML = fsBtnClicked ?
                 'Метафизический<br>"Дом на берегу моря"' :
@@ -2171,10 +2633,9 @@
             fsContent.style.transform = 'scale(1.04)';
 
             playWoosh(0.1);
-            playWaterSurge();
 
             setTimeout(() => {
-                waveTransitionOverlay(() => {
+                blackFadeTransitionOverlay(() => {
                     goToPuzzle();
                     fsContent.style.filter = '';
                     fsContent.style.transform = '';
@@ -2207,6 +2668,7 @@
                 btnAbstract.classList.remove('show');
                 btnHouse.classList.remove('show');
                 btnStory.classList.remove('show');
+                btnLoadingScreen.classList.remove('show');
             }
         }
 
@@ -2584,6 +3046,7 @@
                     btnAbstract.classList.add('show');
                     btnHouse.classList.add('show');
                     btnStory.classList.add('show');
+                    btnLoadingScreen.classList.add('show');
                     playDing(0.2);
 
                     if (!state.hasAutoStartedVnutri && !vnutriPlaying) {
@@ -2798,6 +3261,7 @@
                     btnAbstract.classList.add('show');
                     btnHouse.classList.add('show');
                     btnStory.classList.add('show');
+                    btnLoadingScreen.classList.add('show');
                     playDing(0.2);
                 }, 500);
             }
@@ -2847,19 +3311,1136 @@
             }, 300);
         });
 
+
+        // ============================================================
+        //  ШОШ — персонаж (webmeji/shimeji), физика перенесена из
+        //  проекта «Постпространство» без изменений.
+        // ============================================================
+        const SHOSH_NAME = 'Шош';
+        const SHOSH_FRAME_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28];
+
+        function shoshPath(fileName) {
+            return 'media/shosh/' + fileName;
+        }
+
+        function buildShoshConfig() {
+            const p = shoshPath;
+            return {
+                ALLOWANCES: ['pet', 'drag', 'bottom', 'top', 'left', 'right'],
+                walkspeed: 50,
+                fallspeed: 200,
+                jumpspeed: 650,
+                gettingupspeed: 2000,
+                walk: { frames: [p('shime1.png'), p('shime2.png'), p('shime3.png'), p('shime2.png')], interval: 175, loops: 6 },
+                stand: { frames: [p('shime1.png')], interval: 200, loops: 1 },
+                sit: { frames: [p('shime11.png')], interval: 1000, loops: 1, randomizeDuration: true, min: 3000, max: 11000 },
+                spin: { frames: [p('shime1.png')], interval: 150, loops: 3 },
+                dance: { frames: [p('shime5.png'), p('shime6.png'), p('shime1.png')], interval: 200, loops: 5 },
+                trip: { frames: [p('shime20.png'), p('shime21.png'), p('shime21.png'), p('shime20.png'), p('shime21.png'), p('shime21.png')], interval: 250, loops: 1 },
+                forcewalk: { loops: 6 },
+                forcethink: { frames: [p('shime27.png'), p('shime28.png')], interval: 500, loops: 2 },
+                pet: { frames: [p('shime15.png'), p('shime16.png'), p('shime17.png')], interval: 200 },
+                drag: { frames: [p('shime5.png'), p('shime7.png'), p('shime5.png'), p('shime6.png'), p('shime8.png'), p('shime6.png')], interval: 210 },
+                falling: { frames: [p('shime4.png')], interval: 200, loops: 2 },
+                fallen: { frames: [p('shime19.png'), p('shime18.png')], interval: 250, loops: 1 },
+                ORIGINAL_ACTIONS: [
+                    'walk', 'walk', 'walk', 'walk', 'walk', 'walk',
+                    'walk', 'walk', 'walk', 'walk', 'walk', 'walk',
+                    'spin', 'spin', 'spin',
+                    'sit', 'sit',
+                    'dance', 'dance',
+                    'trip'
+                ],
+                EDGE_ACTIONS: [
+                    'hang', 'hang',
+                    'climb', 'climb', 'climb', 'climb',
+                    'fall', 'fall'
+                ],
+                JUMP_CHANCE: 0.05,
+                climbSide: { frames: [p('shime13.png'), p('shime14.png')], interval: 200, loops: 2 },
+                hangstillSide: { frames: [p('shime12.png')], interval: 200, loops: 2, randomizeDuration: true, min: 3000, max: 11000 },
+                climbTop: { frames: [p('shime24.png'), p('shime25.png')], interval: 200, loops: 6 },
+                hangstillTop: { frames: [p('shime23.png')], interval: 200, loops: 2, randomizeDuration: true, min: 3000, max: 11000 },
+                jump: { frames: [p('shime22.png')], interval: 200 }
+            };
+        }
+
+        class Creature {
+            constructor(containerId, spriteConfig) {
+                this.currentEdge = 'bottom';
+                this._sizePercent = 100;
+
+                this.container = document.createElement('div');
+                this.container.className = 'webmeji-container';
+                document.body.appendChild(this.container);
+
+                this.img = document.createElement('img');
+                this.img.id = containerId;
+                this.img.src = spriteConfig.walk.frames[0] || '';
+                this.container.appendChild(this.img);
+
+                this.spriteConfig = spriteConfig;
+                this.actionSequence = this.shuffle([...this.spriteConfig.ORIGINAL_ACTIONS]);
+                this.currentActionIndex = 0;
+                this.currentAction = null;
+                this.frameTimer = null;
+                this.dragFrameTimer = null;
+                this.actionCompletionTimer = null;
+                this.currentFrame = 0;
+                this.direction = 1;
+                this.facing = 'left';
+
+                this.isDragging = false;
+                this.isFalling = false;
+                this.isPetting = false;
+                this.isJumping = false;
+                this.tripAfterFallActive = false;
+                this.wasActionBeforePet = null;
+
+                this.isPointerDown = false;
+                window.addEventListener('mousedown', () => { this.isPointerDown = true; });
+                window.addEventListener('mouseup', () => { this.isPointerDown = false; });
+                window.addEventListener('touchstart', () => { this.isPointerDown = true; }, { passive: true });
+                window.addEventListener('touchend', () => { this.isPointerDown = false; });
+
+                this.dragVelocityX = 0;
+                this.dragVelocityY = 0;
+                this.lastDragX = 0;
+                this.lastDragY = 0;
+                this.lastDragTime = 0;
+
+                const containerStyle = window.getComputedStyle(this.container);
+                this.containerWidth = parseFloat(containerStyle.width);
+                this.containerHeight = parseFloat(containerStyle.height);
+
+                this.positionX = Math.random() * (window.innerWidth - this.containerWidth);
+                this.positionY = window.innerHeight - this.containerHeight;
+
+                this.container.style.left = `${this.positionX}px`;
+                this.container.style.top = `${this.positionY}px`;
+
+                this.maxPos = window.innerWidth - this.containerWidth;
+                this.forceWalkAfter = false;
+                this.forceThinkAfter = false;
+
+                this.container.style.left = `${this.positionX}px`;
+                this.container.style.top = 'auto';
+                this.baseBottom = 0;
+
+                this.updateImageDirection();
+
+                this.currentAction = this.actionSequence[this.currentActionIndex];
+                this.startAction(this.currentAction);
+
+                this._lastUpdateTime = 0;
+                this.animate = this.animate.bind(this);
+                this.animationFrameId = requestAnimationFrame(this.animate);
+
+                this.resizeHandler = () => {
+                    const style = window.getComputedStyle(this.container);
+                    this.containerWidth = parseFloat(style.width);
+                    this.containerHeight = parseFloat(style.height);
+                    this.maxPos = window.innerWidth - this.containerWidth;
+                    this.positionX = Math.min(this.positionX, this.maxPos);
+                    this.container.style.left = `${this.positionX}px`;
+                };
+                window.addEventListener('resize', this.resizeHandler);
+
+                this.enablePetInteraction();
+                this.enableDragInteraction();
+            }
+
+            shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            updateImageDirection() {
+                this.img.style.transform = this.facing === 'left' ? 'scaleX(1)' : 'scaleX(-1)';
+            }
+
+            setFacingFromDelta(dx) {
+                if (dx && !this.isDragging) {
+                    this.facing = dx < 0 ? 'left' : 'right';
+                    this.updateImageDirection();
+                }
+            }
+
+            resetAnimation() {
+                clearInterval(this.frameTimer);
+                clearTimeout(this.actionCompletionTimer);
+                this.currentFrame = 0;
+                this.frameTimer = null;
+                this.actionCompletionTimer = null;
+            }
+
+            clearAllTimers() {
+                this.resetAnimation();
+                if (this.animationFrameId) {
+                    cancelAnimationFrame(this.animationFrameId);
+                    this.animationFrameId = null;
+                }
+            }
+
+            isSideEdge(edge) { return edge === 'left' || edge === 'right'; }
+
+            isNonBottomEdge(edge) { return edge !== 'bottom'; }
+
+            updateEdgeClass() {
+                this.container.classList.remove('edge-left', 'edge-right', 'edge-top');
+                if (!this.isDragging) {
+                    this.currentEdge === 'left' && this.container.classList.add('edge-left');
+                    this.currentEdge === 'right' && this.container.classList.add('edge-right');
+                    this.currentEdge === 'top' && this.container.classList.add('edge-top');
+                }
+                this.applyEdgeOffset();
+            }
+
+            applyEdgeOffset() {
+                if (this.isDragging) return this.container.style.cssText =
+                    `left:${this.positionX}px;top:${this.positionY}px`;
+                if (this.currentEdge === 'left') {
+                    this.positionX = -35;
+                    this.container.style.left = this.positionX + 'px';
+                } else {
+                    this.container.style.left = this.positionX + 'px';
+                }
+                this.container.style.top = this.positionY + 'px';
+            }
+
+            jumpToEdge(targetEdge) {
+                if (this.isFalling || this.isPetting || this.isDragging || this.isJumping) return;
+                if (!this.spriteConfig.ALLOWANCES.includes(targetEdge)) return;
+
+                this.isJumping = true;
+                this.resetAnimation();
+
+                const jumpConfig = this.spriteConfig.jump;
+                if (!jumpConfig) { this.isJumping = false; return; }
+
+                const startX = this.positionX,
+                    startY = this.positionY;
+                let endX = startX,
+                    endY = startY;
+                switch (targetEdge) {
+                    case 'top':
+                        endY = -5;
+                        endX = Math.random() * (window.innerWidth - this.containerWidth);
+                        break;
+                    case 'left':
+                        endX = -35;
+                        endY = Math.random() * (window.innerHeight - this.containerHeight);
+                        break;
+                    case 'right':
+                        endX = window.innerWidth - this.containerWidth + 20;
+                        endY = Math.random() * (window.innerHeight - this.containerHeight);
+                        break;
+                }
+
+                const dx = endX - startX,
+                    dy = endY - startY;
+                const distance = Math.hypot(dx, dy);
+                if (distance === 0) { this.isJumping = false; return; }
+
+                const duration = distance / (this.spriteConfig.jumpspeed || 650);
+                const startTime = performance.now();
+
+                let frameIndex = 0;
+                const totalFrames = jumpConfig.frames.length;
+                this.img.src = jumpConfig.frames[frameIndex];
+
+                const frameTimer = setInterval(() => {
+                    frameIndex = (frameIndex + 1) % totalFrames;
+                    this.img.src = jumpConfig.frames[frameIndex];
+                }, jumpConfig.interval);
+
+                const step = (time) => {
+                    if (this.isDragging) { clearInterval(frameTimer);
+                        this.isJumping = false; return; }
+                    const elapsed = (time - startTime) / 1000;
+                    const t = Math.min(elapsed / duration, 1);
+                    this.positionX = startX + dx * t;
+                    this.positionY = startY + dy * t;
+                    if (dx !== 0) this.setFacingFromDelta(dx);
+                    this.container.style.left = `${this.positionX}px`;
+                    this.container.style.top = `${this.positionY}px`;
+                    if (t < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        clearInterval(frameTimer);
+                        this.isJumping = false;
+                        this.currentEdge = targetEdge;
+                        this.updateEdgeClass();
+                        this.startEdgeIdle();
+                    }
+                };
+                requestAnimationFrame(step);
+            }
+
+            startEdgeIdle() {
+                this.updateEdgeClass();
+                if (this.currentEdge === 'top') this.startAction('hangstillTop');
+                else if (this.isSideEdge(this.currentEdge)) this.startAction('hangstillSide');
+            }
+
+            edgeAction() {
+                if (this.isJumping || this.isFalling) return;
+                const choice = this.spriteConfig.EDGE_ACTIONS[Math.floor(Math.random() * this.spriteConfig
+                .EDGE_ACTIONS.length)];
+                choice === 'hang' ? this.startEdgeIdle() :
+                    choice === 'climb' ? this.startAction(this.currentEdge === 'top' ? 'climbTop' : 'climbSide') :
+                    choice === 'fall' && this.fallToBottom();
+            }
+
+            enablePetInteraction() {
+                if (!this.spriteConfig.ALLOWANCES?.includes('pet') || !this.spriteConfig.ALLOWANCES?.includes(
+                    'bottom')) return;
+                this.container.addEventListener('mouseenter', () => {
+                    if (this.isFalling || this.isPointerDown || this.isPetting || this.isJumping || this
+                        .currentEdge !== 'bottom') return;
+                    this.isPetting = true;
+                    this.wasActionBeforePet = this.currentAction;
+                    this.startPetAnimation();
+                });
+                this.container.addEventListener('mouseleave', () => {
+                    if (this.isFalling || this.isPointerDown || this.isJumping || this.currentEdge ===
+                        'top') return;
+                    this.isPetting = false;
+                    this.stopPetAnimation();
+                });
+            }
+
+            enableDragInteraction() {
+                if (!this.spriteConfig.ALLOWANCES?.includes('drag')) return;
+                if (!this.spriteConfig.ALLOWANCES?.includes('bottom')) return;
+
+                let offsetX = 0,
+                    offsetY = 0;
+
+                const onPointerMove = (e) => {
+                    e.preventDefault();
+                    let clientX = e.clientX ?? e.touches?.[0].clientX;
+                    let clientY = e.clientY ?? e.touches?.[0].clientY;
+                    this.positionX = clientX - offsetX;
+                    this.positionY = clientY - offsetY;
+                    this.positionX = Math.max(0, Math.min(this.positionX, window.innerWidth - this
+                    .containerWidth));
+                    this.positionY = Math.max(0, Math.min(this.positionY, window.innerHeight - this
+                        .containerHeight));
+                    this.container.style.left = this.positionX + 'px';
+                    this.container.style.top = this.positionY + 'px';
+                };
+
+                const onPointerUp = () => {
+                    window.removeEventListener('mousemove', onPointerMove);
+                    window.removeEventListener('touchmove', onPointerMove);
+                    window.removeEventListener('mouseup', onPointerUp);
+                    window.removeEventListener('touchend', onPointerUp);
+                    this.isDragging = false;
+                    this.isFalling = false;
+                    this.resetAnimation();
+                    this.fallToBottom();
+                    this.animationFrameId = requestAnimationFrame(this.animate);
+                };
+
+                this.container.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    this.startDrag(e.clientX, e.clientY);
+                });
+                this.container.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.startDrag(touch.clientX, touch.clientY);
+                });
+
+                this.startDrag = (clientX, clientY) => {
+                    this.resetAnimation();
+                    if (this.animationFrameId) {
+                        cancelAnimationFrame(this.animationFrameId);
+                        this.animationFrameId = null;
+                    }
+                    this.isDragging = true;
+                    this.tripAfterFallActive = false;
+                    this.isJumping = false;
+                    this.isFalling = false;
+                    this.isPetting = false;
+                    this.currentAction = 'drag';
+                    this.img.style.transform = this.facing === 'left' ? 'scaleX(1)' : 'scaleX(-1)';
+                    if (this.dragFrameTimer) clearInterval(this.dragFrameTimer);
+                    this.startDragAnim();
+
+                    const rect = this.container.getBoundingClientRect();
+                    offsetX = clientX - rect.left;
+                    offsetY = clientY - rect.top;
+                    this.dragVelocityX = 0;
+                    this.dragVelocityY = 0;
+                    this.lastDragX = clientX;
+                    this.lastDragY = clientY;
+                    this.lastDragTime = performance.now();
+
+                    const onPointerMoveLocal = (e) => {
+                        e.preventDefault();
+                        let clientX = e.clientX ?? e.touches?.[0].clientX;
+                        let clientY = e.clientY ?? e.touches?.[0].clientY;
+                        const now = performance.now();
+                        const dt = (now - this.lastDragTime) / 1000;
+                        const moveX = clientX - this.lastDragX;
+                        const moveY = clientY - this.lastDragY;
+                        if (dt > 0.01) {
+                            this.dragVelocityX = moveX / dt;
+                            this.dragVelocityY = moveY / dt;
+                        }
+                        this.lastDragX = clientX;
+                        this.lastDragY = clientY;
+                        this.lastDragTime = now;
+                        this.positionX = clientX - offsetX;
+                        this.positionY = clientY - offsetY;
+                        this.positionX = Math.max(0, Math.min(this.positionX, window.innerWidth - this
+                            .containerWidth));
+                        this.positionY = Math.max(0, Math.min(this.positionY, window.innerHeight - this
+                            .containerHeight));
+                        this.container.style.left = this.positionX + 'px';
+                        this.container.style.top = this.positionY + 'px';
+                    };
+
+                    const onPointerUpLocal = () => {
+                        window.removeEventListener('mousemove', onPointerMoveLocal);
+                        window.removeEventListener('touchmove', onPointerMoveLocal);
+                        window.removeEventListener('mouseup', onPointerUpLocal);
+                        window.removeEventListener('touchend', onPointerUpLocal);
+                        this.isDragging = false;
+                        this.isFalling = false;
+                        if (this.dragFrameTimer) {
+                            clearInterval(this.dragFrameTimer);
+                            this.dragFrameTimer = null;
+                        }
+                        this.dragVelocityX *= 0.7;
+                        this.dragVelocityY *= 0.7;
+                        const speed = Math.hypot(this.dragVelocityX, this.dragVelocityY);
+                        if (speed > 50) {
+                            this.startInertia();
+                        } else {
+                            this.resetAnimation();
+                            this.fallToBottom();
+                            this.animationFrameId = requestAnimationFrame(this.animate);
+                        }
+                    };
+
+                    window.addEventListener('mousemove', onPointerMoveLocal);
+                    window.addEventListener('touchmove', onPointerMoveLocal, { passive: false });
+                    window.addEventListener('mouseup', onPointerUpLocal);
+                    window.addEventListener('touchend', onPointerUpLocal);
+                };
+            }
+
+            startDragAnim() {
+                if (this.dragFrameTimer) clearInterval(this.dragFrameTimer);
+                const dragConfig = this.spriteConfig.drag;
+                if (dragConfig && dragConfig.frames && dragConfig.frames.length) {
+                    let frame = 0;
+                    this.img.src = dragConfig.frames[0];
+                    this.dragFrameTimer = setInterval(() => {
+                        frame = (frame + 1) % dragConfig.frames.length;
+                        this.img.src = dragConfig.frames[frame];
+                    }, dragConfig.interval);
+                }
+            }
+
+            startInertia() {
+                let vx = this.dragVelocityX,
+                    vy = this.dragVelocityY;
+                const gravity = 1400,
+                    friction = 0.99;
+                let lastTime = performance.now();
+
+                this.isJumping = true;
+                this.resetAnimation();
+
+                const jumpFrame = (this.spriteConfig.jump && this.spriteConfig.jump.frames[0]) || '';
+                const fallFrame = (this.spriteConfig.falling && this.spriteConfig.falling.frames[0]) || '';
+                let currentPhase = (vy < 0) ? 'up' : 'down';
+                this.img.src = (currentPhase === 'up') ? jumpFrame : fallFrame;
+
+                const BOUNCE_THRESHOLD = 300,
+                    BOUNCE_FACTOR = 0.6;
+
+                const step = (time) => {
+                    if (this.isDragging || this.isFalling) { this.isJumping = false; return; }
+                    const dt = Math.min((time - lastTime) / 1000, 0.05);
+                    lastTime = time;
+                    vy += gravity * dt;
+                    vx *= friction;
+                    this.positionX += vx * dt;
+                    this.positionY += vy * dt;
+
+                    if (this.positionX < -35) {
+                        if (Math.random() < 0.15) {
+                            this.positionX = -35;
+                            this.positionY = Math.min(Math.max(this.positionY, 0), window.innerHeight - this
+                                .containerHeight);
+                            this.currentEdge = 'left';
+                            this.isJumping = false;
+                            this.resetAnimation();
+                            this.updateEdgeClass();
+                            this.startEdgeIdle();
+                            this.animationFrameId = requestAnimationFrame(this.animate);
+                            return;
+                        } else {
+                            this.positionX = -35;
+                            vx = -vx * 0.5;
+                        }
+                    } else if (this.positionX > window.innerWidth - this.containerWidth + 20) {
+                        if (Math.random() < 0.15) {
+                            this.positionX = window.innerWidth - this.containerWidth + 20;
+                            this.positionY = Math.min(Math.max(this.positionY, 0), window.innerHeight - this
+                                .containerHeight);
+                            this.currentEdge = 'right';
+                            this.isJumping = false;
+                            this.resetAnimation();
+                            this.updateEdgeClass();
+                            this.startEdgeIdle();
+                            this.animationFrameId = requestAnimationFrame(this.animate);
+                            return;
+                        } else {
+                            this.positionX = window.innerWidth - this.containerWidth + 20;
+                            vx = -vx * 0.5;
+                        }
+                    }
+
+                    if (this.positionY < -5 && vy < 0) {
+                        if (Math.random() < 0.15) {
+                            this.positionY = -5;
+                            this.positionX = Math.min(Math.max(this.positionX, 0), window.innerWidth - this
+                                .containerWidth);
+                            this.currentEdge = 'top';
+                            this.isJumping = false;
+                            this.resetAnimation();
+                            this.updateEdgeClass();
+                            this.startEdgeIdle();
+                            this.animationFrameId = requestAnimationFrame(this.animate);
+                            return;
+                        } else {
+                            this.positionY = -5;
+                            vy = Math.abs(vy) * 0.5;
+                        }
+                    }
+
+                    if (vy < 0 && currentPhase !== 'up') { currentPhase = 'up';
+                        this.img.src = jumpFrame; } else if (vy >= 0 && currentPhase !== 'down') { currentPhase =
+                            'down';
+                        this.img.src = fallFrame; }
+
+                    if (vx !== 0) this.setFacingFromDelta(vx);
+
+                    const floorY = window.innerHeight - this.containerHeight;
+                    if (this.positionY >= floorY) {
+                        this.positionY = floorY;
+                        if (vy > BOUNCE_THRESHOLD) {
+                            vy = -vy * BOUNCE_FACTOR;
+                            if (Math.abs(vy) < 50) {
+                                this.container.style.left = this.positionX + 'px';
+                                this.container.style.top = this.positionY + 'px';
+                                this.isJumping = false;
+                                this.resetAnimation();
+                                this.playTripAfterFall();
+                                this.animationFrameId = requestAnimationFrame(this.animate);
+                                return;
+                            }
+                            this.container.style.left = this.positionX + 'px';
+                            this.container.style.top = this.positionY + 'px';
+                            requestAnimationFrame(step);
+                            return;
+                        } else {
+                            this.container.style.left = this.positionX + 'px';
+                            this.container.style.top = this.positionY + 'px';
+                            this.isJumping = false;
+                            this.resetAnimation();
+                            this.playTripAfterFall();
+                            this.animationFrameId = requestAnimationFrame(this.animate);
+                            return;
+                        }
+                    }
+
+                    this.container.style.left = this.positionX + 'px';
+                    this.container.style.top = this.positionY + 'px';
+                    requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            }
+
+            forceFall() {
+                if (this.isDragging) return;
+                if (this.currentEdge === 'bottom') return;
+                this.currentEdge = 'bottom';
+                this.isJumping = false;
+                this.resetAnimation();
+                this.fallToBottom(this.spriteConfig.fallspeed || 200);
+            }
+
+            fallToBottom(fallSpeed = this.spriteConfig.fallspeed) {
+                if (this.isFalling) return;
+                this.tripAfterFallActive = false;
+                this.isFalling = true;
+                this.currentEdge = 'bottom';
+                this.updateEdgeClass();
+                this.resetAnimation();
+
+                const cfg = this.spriteConfig.falling;
+                if (!cfg) return;
+
+                let frameIndex = 0;
+                this.img.src = cfg.frames[0];
+                this.frameTimer = setInterval(() => {
+                    frameIndex = (frameIndex + 1) % cfg.frames.length;
+                    this.img.src = cfg.frames[frameIndex];
+                }, cfg.interval);
+
+                const startY = this.positionY,
+                    endY = window.innerHeight - this.containerHeight,
+                    distance = endY - startY;
+                if (distance <= 0) {
+                    clearInterval(this.frameTimer);
+                    this.frameTimer = null;
+                    this.positionY = endY;
+                    this.container.style.top = `${endY}px`;
+                    return this.playTripAfterFall();
+                }
+
+                const startTime = performance.now();
+                const step = (time) => {
+                    if (this.isDragging) {
+                        clearInterval(this.frameTimer);
+                        this.frameTimer = null;
+                        return this.animationFrameId = requestAnimationFrame(this.animate);
+                    }
+                    const elapsed = (time - startTime) / 1000;
+                    const deltaY = fallSpeed * elapsed;
+                    this.positionY = Math.min(startY + deltaY, endY);
+                    this.container.style.top = `${this.positionY}px`;
+                    if (this.positionY < endY) {
+                        requestAnimationFrame(step);
+                    } else {
+                        clearInterval(this.frameTimer);
+                        this.frameTimer = null;
+                        this.positionY = endY;
+                        this.container.style.top = `${endY}px`;
+                        this.playTripAfterFall();
+                    }
+                };
+                requestAnimationFrame(step);
+            }
+
+            playTripAfterFall() {
+                const tripConfig = this.spriteConfig.fallen;
+                if (!tripConfig) { this.resumeAfterFallen(); return; }
+                this.tripAfterFallActive = true;
+                let frame = 0;
+                const totalFrames = tripConfig.frames.length;
+                this.img.src = tripConfig.frames[0];
+
+                const frameTimer = setInterval(() => {
+                    frame++;
+                    if (frame >= totalFrames) {
+                        clearInterval(frameTimer);
+                        this.img.src = tripConfig.frames[totalFrames - 1];
+                        setTimeout(() => {
+                            if (this.tripAfterFallActive) this.resumeAfterFallen();
+                        }, this.spriteConfig.gettingupspeed);
+                    } else {
+                        this.img.src = tripConfig.frames[frame];
+                    }
+                }, tripConfig.interval);
+            }
+
+            resumeAfterFallen() {
+                if (this.isDragging) return;
+                this.isFalling = false;
+                this.isPetting = false;
+                this.resetAnimation();
+                this.lastTime = performance.now();
+                this.currentAction = 'sit';
+                this.setNextAction();
+                this.animationFrameId = requestAnimationFrame(this.animate);
+            }
+
+            setNextAction() {
+                if (this.isDragging || this.isFalling) return;
+                this.resetAnimation();
+
+                if (['top', 'left', 'right'].includes(this.currentEdge)) {
+                    this.edgeAction();
+                    return;
+                }
+
+                if (!this.isJumping && this.positionY >= window.innerHeight - this.containerHeight) {
+                    if (Math.random() < this.spriteConfig.JUMP_CHANCE) {
+                        const edges = ['top', 'left', 'right'].filter(e => this.spriteConfig.ALLOWANCES.includes(
+                        e));
+                        if (edges.length) {
+                            const target = edges[Math.floor(Math.random() * edges.length)];
+                            this.jumpToEdge(target);
+                            return;
+                        }
+                    }
+                }
+
+                if (this.forceWalkAfter) { this.forceWalkAfter = false;
+                    this.startForcedWalk(); return; }
+                if (this.forceThinkAfter) { this.forceThinkAfter = false;
+                    this.startForceThink(); return; }
+
+                this.currentActionIndex++;
+                if (this.currentActionIndex >= this.actionSequence.length) {
+                    this.currentActionIndex = 0;
+                    this.actionSequence = this.shuffle([...this.spriteConfig.ORIGINAL_ACTIONS]);
+                }
+                this.currentAction = this.actionSequence[this.currentActionIndex];
+                this.startAction(this.currentAction);
+            }
+
+            startForcedWalk() {
+                const { frames, interval } = this.spriteConfig.walk;
+                const walkCycles = this.spriteConfig.forcewalk;
+                this.currentAction = 'forced-walk';
+                this.playAnimation(frames, interval, walkCycles.loops || 6, () => this.setNextAction());
+            }
+
+            startForceThink() {
+                const { frames, interval, loops } = this.spriteConfig.forcethink;
+                this.currentAction = 'force-think';
+                this.playAnimation(frames, interval, loops || 2, () => this.setNextAction());
+            }
+
+            startPetAnimation() {
+                this.resetAnimation();
+                const petConfig = this.spriteConfig.pet;
+                if (!petConfig) return;
+                this.currentAction = 'pet';
+                let frame = 0;
+                this.img.src = petConfig.frames[0];
+                this.frameTimer = setInterval(() => {
+                    frame = (frame + 1) % petConfig.frames.length;
+                    this.img.src = petConfig.frames[frame];
+                }, petConfig.interval);
+            }
+
+            stopPetAnimation() {
+                this.resetAnimation();
+                this.currentAction = this.wasActionBeforePet || 'sit';
+                this.wasActionBeforePet = null;
+                this.setNextAction();
+            }
+
+            startAction(action) {
+                if (this.isDragging || this.isFalling) return;
+                this.currentAction = action;
+                this.resetAnimation();
+
+                if (action === 'climbTop') { this.direction = Math.random() < 0.5 ? -1 : 1;
+                    this.updateImageDirection(); }
+                if (action === 'climbSide') { this.direction = Math.random() < 0.5 ? -1 : 1; }
+                if (this.isJumping) { this.animationFrameId = requestAnimationFrame(this.animate); return; }
+
+                const config = this.spriteConfig[action];
+                if (!config) return;
+
+                const { frames, interval, loops = 1 } = config;
+
+                if (action === 'sit' || action === 'hangstillSide' || action === 'hangstillTop') {
+                    const duration = config.randomizeDuration ?
+                        Math.random() * (config.max - config.min) + config.min :
+                        interval * loops;
+                    this.img.src = frames[0];
+                    this.actionCompletionTimer = setTimeout(() => {
+                        this.forceWalkAfter = true;
+                        this.setNextAction();
+                    }, duration);
+                    return;
+                }
+
+                this.playAnimation(frames, interval, loops, () => {
+                    if (action === 'spin') {
+                        this.direction *= -1;
+                        this.facing = this.facing === 'left' ? 'right' : 'left';
+                        this.updateImageDirection();
+                    }
+                    if (['trip', 'spin'].includes(action)) this.forceWalkAfter = true;
+                    if (action === 'dance') this.forceThinkAfter = true;
+                    this.setNextAction();
+                });
+            }
+
+            playAnimation(frames, interval, loops, onComplete) {
+                let playCount = 0,
+                    f = 0;
+                this.currentFrame = 0;
+                this.img.src = frames[0];
+                if (this.frameTimer) clearInterval(this.frameTimer);
+
+                this.frameTimer = setInterval(() => {
+                    this.currentFrame = f = (f + 1) % frames.length;
+                    this.img.src = frames[f];
+                    if (f === frames.length - 1 && ++playCount >= loops) {
+                        clearInterval(this.frameTimer);
+                        this.frameTimer = null;
+                        this.currentAction = null;
+                        this.actionCompletionTimer = setTimeout(onComplete, 0);
+                    }
+                }, interval);
+            }
+
+            animate(time) {
+                if (time - this._lastUpdateTime < 33) {
+                    this.animationFrameId = requestAnimationFrame(this.animate);
+                    return;
+                }
+                this._lastUpdateTime = time;
+
+                if (!this.lastTime) this.lastTime = time;
+                const delta = (time - this.lastTime) / 1000;
+                this.lastTime = time;
+                if (this.isDragging || this.isFalling) {
+                    this.animationFrameId = requestAnimationFrame(this.animate);
+                    return;
+                }
+                const movingActions = ['walk', 'forced-walk', 'climbTop'];
+                if (movingActions.includes(this.currentAction)) {
+                    const dx = this.direction * this.spriteConfig.walkspeed * delta;
+                    this.positionX += dx;
+                    this.setFacingFromDelta(dx);
+                    if (this.positionX <= 0) { this.positionX = 0;
+                        this.direction = 1;
+                        this.facing = 'right';
+                        this.updateImageDirection(); } else if (this.positionX >= this.maxPos) { this.positionX = this
+                            .maxPos;
+                        this.direction = -1;
+                        this.facing = 'left';
+                        this.updateImageDirection(); }
+                    this.applyEdgeOffset();
+                }
+
+                if (this.currentAction === 'climbSide') {
+                    this.positionY += this.direction * this.spriteConfig.walkspeed * delta;
+                    if (this.currentEdge === 'left') this.facing = 'left';
+                    else if (this.currentEdge === 'right') this.facing = 'right';
+                    this.updateImageDirection();
+                    const maxY = window.innerHeight - this.containerHeight;
+                    if (this.positionY <= -5) { this.positionY = -5;
+                        this.direction = 1; } else if (this.positionY >= maxY) { this.positionY = maxY;
+                        this.direction = -1; }
+                    this.applyEdgeOffset();
+                }
+                this.animationFrameId = requestAnimationFrame(this.animate);
+            }
+        }
+
+        function getNextShoshScaleStep(current) {
+            const cycle = [150, 200, 50, 100];
+            const idx = cycle.indexOf(current);
+            if (idx !== -1) return cycle[(idx + 1) % cycle.length];
+            if (current > 50 && current < 100) return 100;
+            if (current > 100 && current < 150) return 150;
+            if (current > 150 && current < 200) return 200;
+            if (current < 50) return 50;
+            if (current > 200) return 200;
+            return 150;
+        }
+
+        window.WebmejiManager = {
+            creatures: [],
+            characters: {},
+            creatureIdCounter: 0,
+
+            addCharacter(name, config, previewUrl) {
+                if (config.jumpspeed && config.jumpspeed < 300) config.jumpspeed = 650;
+                this.characters[name] = { config, previewUrl, size: 100 };
+                this.renderList();
+            },
+
+            spawnCharacter(name, size) {
+                const char = this.characters[name];
+                if (!char) return;
+                const finalSize = size || char.size || 100;
+                const id = 'creature-' + (++this.creatureIdCounter);
+                const creature = new Creature(id, char.config);
+                creature._sizePercent = finalSize;
+                this.setCreatureSize(creature, finalSize, { isSpawn: true });
+                this.creatures.push({ creature, name, size: finalSize });
+                this.renderList();
+            },
+
+            // Спавн персонажа, падающего сверху экрана (обычный персонаж,
+            // просто стартовая позиция — за кадром сверху, дальше он падает
+            // штатной анимацией fallToBottom).
+            spawnCharacterFromTop(name, size) {
+                const char = this.characters[name];
+                if (!char) return;
+                const finalSize = size || char.size || 100;
+                const id = 'creature-' + (++this.creatureIdCounter);
+                const creature = new Creature(id, char.config);
+                creature._sizePercent = finalSize;
+                this.setCreatureSize(creature, finalSize, { isSpawn: true });
+                creature.positionY = -creature.containerHeight - Math.random() * 240;
+                creature.container.style.top = creature.positionY + 'px';
+                creature.currentEdge = 'top';
+                creature.fallToBottom(creature.spriteConfig.fallspeed || 200);
+                this.creatures.push({ creature, name, size: finalSize });
+                this.renderList();
+            },
+
+            setCreatureSize(creature, sizePercent, opts = {}) {
+                const oldSize = creature._sizePercent || 100;
+                const baseSize = 100;
+                const newWidth = baseSize * (sizePercent / 100);
+                creature.container.style.width = newWidth + 'px';
+                creature.container.style.height = 'auto';
+                creature.containerWidth = newWidth;
+                const measuredH = creature.img.naturalWidth ?
+                    newWidth * (creature.img.naturalHeight / creature.img.naturalWidth) :
+                    newWidth;
+                creature.containerHeight = measuredH;
+                creature.maxPos = window.innerWidth - newWidth;
+                creature._sizePercent = sizePercent;
+                if (creature.positionX + newWidth > window.innerWidth) {
+                    creature.positionX = window.innerWidth - newWidth;
+                    creature.container.style.left = creature.positionX + 'px';
+                }
+                if (creature.positionY + measuredH > window.innerHeight) {
+                    creature.positionY = window.innerHeight - measuredH;
+                    creature.container.style.top = creature.positionY + 'px';
+                }
+                creature.applyEdgeOffset();
+
+                if (!opts.isSpawn) {
+                    if (sizePercent < oldSize) creature.forceFall();
+                    else if (sizePercent > oldSize && creature.currentEdge !== 'bottom') creature.forceFall();
+                }
+            },
+
+            updateSizeForName(name, newSize) {
+                if (this.characters[name]) this.characters[name].size = newSize;
+                this.creatures.forEach(item => {
+                    if (item.name === name) {
+                        this.setCreatureSize(item.creature, newSize);
+                        item.size = newSize;
+                    }
+                });
+                this.renderList();
+            },
+
+            despawnOne(name) {
+                const indexes = [];
+                this.creatures.forEach((item, idx) => { if (item.name === name) indexes.push(idx); });
+                if (indexes.length === 0) return;
+                const idx = indexes[indexes.length - 1];
+                const removed = this.creatures.splice(idx, 1)[0];
+                if (removed && removed.creature.container && removed.creature.container.parentNode) {
+                    removed.creature.container.parentNode.removeChild(removed.creature.container);
+                }
+                if (removed.creature.clearAllTimers) removed.creature.clearAllTimers();
+                this.renderList();
+            },
+
+            despawnAll(name) {
+                const toRemove = this.creatures.filter(item => item.name === name);
+                toRemove.forEach(item => {
+                    if (item.creature.container && item.creature.container.parentNode) {
+                        item.creature.container.parentNode.removeChild(item.creature.container);
+                    }
+                    if (item.creature.clearAllTimers) item.creature.clearAllTimers();
+                });
+                this.creatures = this.creatures.filter(item => item.name !== name);
+                this.renderList();
+            },
+
+            clearAll() {
+                this.creatures.forEach(item => {
+                    if (item.creature.container && item.creature.container.parentNode) {
+                        item.creature.container.parentNode.removeChild(item.creature.container);
+                    }
+                    if (item.creature.clearAllTimers) item.creature.clearAllTimers();
+                });
+                this.creatures = [];
+                this.renderList();
+            },
+
+            renderList() {
+                const list = document.getElementById('shoshCreatureList');
+                if (!list) return;
+                list.innerHTML = '';
+                const mgr = this;
+                for (const [name, char] of Object.entries(this.characters)) {
+                    const count = this.creatures.filter(c => c.name === name).length;
+                    const div = document.createElement('div');
+                    div.className = 'creature-item';
+                    const size = char.size || 100;
+                    div.innerHTML = `
+                        <img class="preview" src="${char.previewUrl}" alt="${name}">
+                        <span class="info">${name}</span>
+                        <span class="info-count">(${count})</span>
+                        <div class="size-control">
+                            <button class="size-down" data-name="${name}" title="Уменьшить">−</button>
+                            <span class="size-label" data-name="${name}" title="Переключить масштаб">${Math.round(size)}%</span>
+                            <button class="size-up" data-name="${name}" title="Увеличить">+</button>
+                        </div>
+                        <div class="actions">
+                            <button data-name="${name}" class="spawn-btn" title="Позвать ещё">+</button>
+                            <button data-name="${name}" class="despawn-btn" title="Убрать одного">−</button>
+                            <button data-name="${name}" class="despawn-all-btn" title="Убрать всех">🧹</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                }
+
+                list.querySelectorAll('.spawn-btn').forEach(btn => {
+                    btn.addEventListener('click', () => mgr.spawnCharacter(btn.dataset.name));
+                });
+                list.querySelectorAll('.despawn-btn').forEach(btn => {
+                    btn.addEventListener('click', () => mgr.despawnOne(btn.dataset.name));
+                });
+                list.querySelectorAll('.despawn-all-btn').forEach(btn => {
+                    btn.addEventListener('click', () => mgr.despawnAll(btn.dataset.name));
+                });
+                list.querySelectorAll('.size-label').forEach(lbl => {
+                    lbl.addEventListener('click', () => {
+                        const name = lbl.dataset.name;
+                        const char = mgr.characters[name];
+                        if (char) {
+                            const current = Math.round(char.size || 100);
+                            mgr.updateSizeForName(name, getNextShoshScaleStep(current));
+                        }
+                    });
+                });
+                list.querySelectorAll('.size-up').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const name = btn.dataset.name;
+                        const char = mgr.characters[name];
+                        if (char) {
+                            let newSize = (char.size || 100) + 5;
+                            if (newSize > 200) newSize = 200;
+                            mgr.updateSizeForName(name, newSize);
+                        }
+                    });
+                });
+                list.querySelectorAll('.size-down').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const name = btn.dataset.name;
+                        const char = mgr.characters[name];
+                        if (char) {
+                            let newSize = (char.size || 100) - 5;
+                            if (newSize < 50) newSize = 50;
+                            mgr.updateSizeForName(name, newSize);
+                        }
+                    });
+                });
+            }
+        };
+
+        // ===== Регистрация и первый спавн Шоша (уже на экране загрузки) =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const shoshConfig = buildShoshConfig();
+            window.WebmejiManager.addCharacter(SHOSH_NAME, shoshConfig, shoshConfig.walk.frames[0]);
+            window.WebmejiManager.characters[SHOSH_NAME].size = 150;
+            window.WebmejiManager.spawnCharacter(SHOSH_NAME);
+
+            // ===== Спавн Шошей по клику на название "Подарок" в верхней панели =====
+            // 1-й клик — 10 шт., 2-й — 5 шт., 3-й — 2 шт., далее — по одному.
+            // Все падают сверху и являются обычными персонажами (считаются в
+            // панели "шош", управляются и деспавнятся так же, как остальные).
+            const topBarTitle = document.getElementById('topBarTitle');
+            const shoshTitleSpawnSequence = [10, 5, 2];
+            let shoshTitleClickCount = 0;
+            topBarTitle.addEventListener('click', () => {
+                playSoftClick();
+                const countToSpawn = shoshTitleClickCount < shoshTitleSpawnSequence.length ?
+                    shoshTitleSpawnSequence[shoshTitleClickCount] : 1;
+                shoshTitleClickCount++;
+                for (let i = 0; i < countToSpawn; i++) {
+                    setTimeout(() => {
+                        window.WebmejiManager.spawnCharacterFromTop(SHOSH_NAME);
+                    }, i * 90);
+                }
+            });
+
+            const panel = document.getElementById('shoshPanel');
+            const floatBtn = document.getElementById('shoshFloatingBtn');
+            const closeBtn = document.getElementById('shoshPanelClose');
+            const panelTitle = document.getElementById('shoshPanelTitle');
+
+            floatBtn.addEventListener('click', () => {
+                panel.classList.toggle('show');
+                floatBtn.classList.toggle('active', panel.classList.contains('show'));
+                if (panel.classList.contains('show')) window.WebmejiManager.renderList();
+            });
+            closeBtn.addEventListener('click', () => {
+                panel.classList.remove('show');
+                floatBtn.classList.remove('active');
+            });
+
+            let isPanelDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+            panelTitle.addEventListener('mousedown', (e) => {
+                if (e.target.closest('.close-btn')) return;
+                isPanelDragging = true;
+                const rect = panel.getBoundingClientRect();
+                dragOffsetX = e.clientX - rect.left;
+                dragOffsetY = e.clientY - rect.top;
+                panel.style.transition = 'none';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!isPanelDragging) return;
+                let left = e.clientX - dragOffsetX;
+                let top = e.clientY - dragOffsetY;
+                const maxX = window.innerWidth - panel.getBoundingClientRect().width;
+                const maxY = window.innerHeight - panel.getBoundingClientRect().height;
+                left = Math.max(0, Math.min(maxX, left));
+                top = Math.max(0, Math.min(maxY, top));
+                panel.style.left = left + 'px';
+                panel.style.top = top + 'px';
+                panel.style.right = 'auto';
+                panel.style.bottom = 'auto';
+            });
+            document.addEventListener('mouseup', () => {
+                if (isPanelDragging) {
+                    isPanelDragging = false;
+                    panel.style.transition = '';
+                }
+            });
+        });
+
         // ============================================================
         //  INIT
         // ============================================================
+        // Экран загрузки держим минимум 5 секунд с самого начала —
+        // так открытие выглядит красиво даже при мгновенной локальной загрузке
+        // (переменные MIN_LOADING_TIME/loadingStartTime объявлены выше, в блоке LOADING SCREEN).
+
         // Сначала предзагружаем все изображения, затем показываем страницу
         preloadImages().then(() => {
-            hideLoading();
-            // Стартовая страница уже активна, показываем её
-            showPage('pageStart');
-            // Автоматически запускаем фоновую музыку при первом клике (уже есть обработчик)
-            document.addEventListener('click', () => {
-                initAudio();
-                bgMusic.play().catch(() => {});
-            }, { once: true });
+            const elapsed = performance.now() - loadingStartTime;
+            const remaining = Math.max(0, MIN_LOADING_TIME - elapsed);
+            setTimeout(() => {
+                hideLoading();
+                // Стартовая страница уже активна, показываем её —
+                // но вопрос с вариантами появится чуть позже, отдельно,
+                // чтобы после экрана загрузки сначала остался просто белый фон.
+                showPage('pageStart');
+                setTimeout(() => {
+                    pendingStartReveal = false;
+                    // Явно фиксируем текущее состояние (opacity: 0) и ждём два кадра
+                    // отрисовки, прежде чем добавлять content-visible — иначе браузер
+                    // иногда "схлопывает" смену класса в один кадр, и текст появляется
+                    // резко, минуя переход opacity.
+                    void pageStart.offsetHeight; // форсируем reflow
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            pageStart.classList.add('content-visible');
+                        });
+                    });
+                }, 3100); // ~1.1с — угасание экрана загрузки, затем 2с чистого белого фона
+            }, remaining);
         });
 
         // Но мы также должны убедиться, что страница не будет активна до загрузки
