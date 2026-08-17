@@ -733,6 +733,19 @@
                 height: 54px;
             }
         }
+
+        /* ===== ЖИДКИЙ КУРСОР (глобальный, работает на всей странице) ===== */
+        #liquidCursorLayer {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            pointer-events: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #liquidCursorLayer {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -741,6 +754,9 @@
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
         <defs id="globalSvgDefs"></defs>
     </svg>
+
+    <!-- ===== ЖИДКИЙ КУРСОР (глобальный слой, поверх всей страницы) ===== -->
+    <div id="liquidCursorLayer"></div>
 
     <!-- ===== TOP BAR ===== -->
     <header id="topBar">
@@ -751,7 +767,7 @@
             <button class="topBtn" id="btnAbstract">К абстракциям</button>
             <button class="topBtn" id="btnStory">Путешествия Черепахи</button>
             <button class="topBtn" id="btnHouse">"Дом на берегу моря"</button>
-            <button class="topBtn" id="btnGift">ДОПОЛНИТЕЛЬНЫЙ ПОДАРОК. СДЕЛАННЫЙ 100% БЕЗ НЕЙРОНОК</button>
+            <button class="topBtn" id="btnGift">Доп. подарок</button>
             <button class="topBtn iconBtn show" id="btnFullscreen" title="Полный экран">⛶</button>
         </div>
     </header>
@@ -827,11 +843,10 @@
             audioCtx: null,
             abstractTextIndex: 0,
             abstractTextShown: false,
+            abstractSquareClicked: false,
             isAbstractTextMode: false,
             buttonsUnlocked: false,
             giftPuzzleComplete: false,
-            // Флаг: автозапуск "МОРЕ ВНУТРИ" уже был выполнен после первого сбора пазла
-            hasAutoStartedVnutri: false,
         };
 
         const storyLines = [
@@ -1152,30 +1167,6 @@
         }
 
         // ============================================================
-        //  УПРАВЛЕНИЕ МУЗЫКОЙ "МОРЕ ВНУТРИ"
-        // ============================================================
-        let vnutriPlaying = false;
-
-        function startVnutriMusic() {
-            initAudio();
-            bgMusic.pause();
-            puzzleMusic.pause();
-            vnutriMusic.currentTime = 0;
-            vnutriMusic.play().catch(() => {});
-            vnutriPlaying = true;
-            btnMusic.classList.add('active');
-            btnMusic.textContent = '♪ Выключить музыку «МОРЕ ВНУТРИ»';
-        }
-
-        function stopVnutriMusic() {
-            vnutriMusic.pause();
-            vnutriMusic.currentTime = 0;
-            vnutriPlaying = false;
-            btnMusic.classList.remove('active');
-            btnMusic.textContent = '♪ МОРЕ ВНУТРИ';
-        }
-
-        // ============================================================
         //  PAGE NAVIGATION
         // ============================================================
         function showPage(id) {
@@ -1237,7 +1228,6 @@
             state.isAbstractTextMode = false;
             state.abstractSquareClicked = false;
             state.giftPuzzleComplete = false;
-            // НЕ сбрасываем state.hasAutoStartedVnutri — он должен сохраняться между сессиями
             document.querySelectorAll('.option').forEach(el => {
                 el.classList.remove('removed');
                 el.style.display = '';
@@ -1382,12 +1372,27 @@
         // ============================================================
         //  "ВНУТРИ" MUSIC TOGGLE
         // ============================================================
+        let vnutriPlaying = false;
+
+        function stopVnutriMusic() {
+            vnutriMusic.pause();
+            vnutriMusic.currentTime = 0;
+            vnutriPlaying = false;
+            btnMusic.classList.remove('active');
+            btnMusic.textContent = '♪ МОРЕ ВНУТРИ';
+        }
         btnMusic.addEventListener('click', () => {
             playSoftClick();
             if (vnutriPlaying) {
                 stopVnutriMusic();
             } else {
-                startVnutriMusic();
+                bgMusic.pause();
+                puzzleMusic.pause();
+                vnutriMusic.currentTime = 0;
+                vnutriMusic.play().catch(() => {});
+                vnutriPlaying = true;
+                btnMusic.classList.add('active');
+                btnMusic.textContent = '♪ Выключить музыку «МОРЕ ВНУТРИ»';
             }
         });
 
@@ -2432,15 +2437,6 @@
                     btnHouse.classList.add('show');
                     btnStory.classList.add('show');
                     playDing(0.2);
-
-                    // ===== АВТОЗАПУСК "МОРЕ ВНУТРИ" ПОСЛЕ ПЕРВОГО СБОРА =====
-                    if (!state.hasAutoStartedVnutri && !vnutriPlaying) {
-                        startVnutriMusic();
-                        state.hasAutoStartedVnutri = true;
-                    } else if (!state.hasAutoStartedVnutri && vnutriPlaying) {
-                        // Музыка уже играет — просто отмечаем, что автозапуск был выполнен
-                        state.hasAutoStartedVnutri = true;
-                    }
                 }, 500);
             }
         }
@@ -2771,6 +2767,168 @@
         }
 
         // ============================================================
+        //  LIQUID CURSOR (глобальный эффект — работает на всей странице)
+        //  Система позаимствована из gentlerain (delta-диффузия pressure/
+        //  velocity), но вместо WGL-текстуры карта смещений применяется
+        //  через backdrop-filter + feDisplacementMap, поэтому искажает
+        //  реальный контент под курсором, а не отдельный canvas/область.
+        // ============================================================
+        (function initLiquidCursor() {
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion) return;
+
+            const layer = document.getElementById('liquidCursorLayer');
+            if (!layer) return;
+
+            const GRID = 56;
+            const DELTA = 1.4;
+            const RADIUS = 3.2; // радиус воздействия курсора в ячейках сетки
+
+            let pressureA = new Float32Array(GRID * GRID);
+            let velocityA = new Float32Array(GRID * GRID);
+            let pressureB = new Float32Array(GRID * GRID);
+            let velocityB = new Float32Array(GRID * GRID);
+
+            const idx = (x, y) => y * GRID + x;
+
+            const pointer = { gx: -10, gy: -10, active: false };
+            function updatePointer(clientX, clientY) {
+                pointer.gx = (clientX / window.innerWidth) * GRID;
+                pointer.gy = (clientY / window.innerHeight) * GRID;
+                pointer.active = true;
+            }
+            document.addEventListener('mousemove', e => updatePointer(e.clientX, e.clientY), { passive: true });
+            document.addEventListener('touchmove', e => {
+                if (e.touches && e.touches[0]) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+            document.addEventListener('touchstart', e => {
+                if (e.touches && e.touches[0]) updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+            document.addEventListener('touchend', () => { pointer.active = false; }, { passive: true });
+            document.addEventListener('mouseout', e => { if (!e.relatedTarget) pointer.active = false; });
+
+            // офскрин-канвас для карты смещений
+            const mapCanvas = document.createElement('canvas');
+            mapCanvas.width = GRID;
+            mapCanvas.height = GRID;
+            const mctx = mapCanvas.getContext('2d');
+            const imgData = mctx.createImageData(GRID, GRID);
+
+            // персистентный SVG-фильтр (создаётся один раз на всю жизнь страницы)
+            const filterId = 'liquidCursorFilter';
+            const filter = document.createElementNS(svgns, 'filter');
+            filter.setAttribute('id', filterId);
+            filter.setAttribute('x', '-5%');
+            filter.setAttribute('y', '-5%');
+            filter.setAttribute('width', '110%');
+            filter.setAttribute('height', '110%');
+            filter.setAttribute('color-interpolation-filters', 'sRGB');
+            const feImg = document.createElementNS(svgns, 'feImage');
+            feImg.setAttribute('x', '0');
+            feImg.setAttribute('y', '0');
+            feImg.setAttribute('width', '100%');
+            feImg.setAttribute('height', '100%');
+            feImg.setAttribute('preserveAspectRatio', 'none');
+            feImg.setAttribute('result', 'liquidMap');
+            const blur = document.createElementNS(svgns, 'feGaussianBlur');
+            blur.setAttribute('in', 'liquidMap');
+            blur.setAttribute('stdDeviation', '1.1');
+            blur.setAttribute('result', 'liquidMapSmooth');
+            const disp = document.createElementNS(svgns, 'feDisplacementMap');
+            disp.setAttribute('in', 'SourceGraphic');
+            disp.setAttribute('in2', 'liquidMapSmooth');
+            disp.setAttribute('scale', '18');
+            disp.setAttribute('xChannelSelector', 'R');
+            disp.setAttribute('yChannelSelector', 'G');
+            filter.appendChild(feImg);
+            filter.appendChild(blur);
+            filter.appendChild(disp);
+            globalSvgDefs.appendChild(filter);
+
+            layer.style.backdropFilter = `url(#${filterId})`;
+            layer.style.webkitBackdropFilter = `url(#${filterId})`;
+
+            function simulate() {
+                for (let y = 0; y < GRID; y++) {
+                    for (let x = 0; x < GRID; x++) {
+                        const i = idx(x, y);
+                        const p = pressureA[i];
+                        const v = velocityA[i];
+                        const pRight = pressureA[idx(Math.min(x + 1, GRID - 1), y)];
+                        const pLeft = pressureA[idx(Math.max(x - 1, 0), y)];
+                        const pUp = pressureA[idx(x, Math.max(y - 1, 0))];
+                        const pDown = pressureA[idx(x, Math.min(y + 1, GRID - 1))];
+
+                        let nv = v;
+                        nv += DELTA * (-2 * p + pRight + pLeft) / 4;
+                        nv += DELTA * (-2 * p + pUp + pDown) / 4;
+
+                        let np = p + DELTA * nv;
+                        nv -= 0.02 * DELTA * np;
+                        nv *= 1 - 0.03 * DELTA;
+                        np *= 0.985;
+
+                        pressureB[i] = np;
+                        velocityB[i] = nv;
+                    }
+                }
+
+                if (pointer.active) {
+                    for (let y = 0; y < GRID; y++) {
+                        for (let x = 0; x < GRID; x++) {
+                            const dx = x - pointer.gx;
+                            const dy = y - pointer.gy;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist <= RADIUS) {
+                                pressureB[idx(x, y)] += 1.6 * (1 - dist / RADIUS);
+                            }
+                        }
+                    }
+                }
+
+                let tmpP = pressureA; pressureA = pressureB; pressureB = tmpP;
+                let tmpV = velocityA; velocityA = velocityB; velocityB = tmpV;
+            }
+
+            function render() {
+                const data = imgData.data;
+                for (let y = 0; y < GRID; y++) {
+                    const y0 = Math.max(y - 1, 0), y1 = Math.min(y + 1, GRID - 1);
+                    for (let x = 0; x < GRID; x++) {
+                        const x0 = Math.max(x - 1, 0), x1 = Math.min(x + 1, GRID - 1);
+                        const i = idx(x, y);
+                        const dx = (pressureA[idx(x1, y)] - pressureA[idx(x0, y)]) * 40;
+                        const dy = (pressureA[idx(x, y1)] - pressureA[idx(x, y0)]) * 40;
+                        const di = i * 4;
+                        data[di] = Math.max(0, Math.min(255, 128 + dx));
+                        data[di + 1] = Math.max(0, Math.min(255, 128 + dy));
+                        data[di + 2] = 128;
+                        data[di + 3] = 255;
+                    }
+                }
+                mctx.putImageData(imgData, 0, 0);
+                feImg.setAttribute('href', mapCanvas.toDataURL('image/png'));
+            }
+
+            let running = true;
+            document.addEventListener('visibilitychange', () => {
+                const wasHidden = !running;
+                running = !document.hidden;
+                if (running && wasHidden) requestAnimationFrame(step);
+            });
+
+            let frameCount = 0;
+            function step() {
+                if (!running) return;
+                simulate();
+                frameCount++;
+                if (frameCount % 2 === 0) render(); // рендерим карту смещений на пол-частоте кадров ради производительности
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        })();
+
+        // ============================================================
         //  RESIZE
         // ============================================================
         let resizeTimeout;
@@ -2815,7 +2973,6 @@
 
         console.log('✦ Подарок ✦');
         console.log('Все системы работают — жидкость удалена.');
-        console.log('✦ МОРЕ ВНУТРИ автоматически включится после первого сбора пазла "Дом на берегу моря"');
     </script>
 </body>
 </html>
