@@ -22,67 +22,6 @@
             position: relative;
         }
 
-        /* ===== LOADING SCREEN ===== */
-        #loadingScreen {
-            position: fixed;
-            inset: 0;
-            z-index: 999999;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1s ease;
-            font-family: 'Georgia', 'Times New Roman', serif;
-            color: #222;
-            text-align: center;
-            padding: 20px;
-        }
-        #loadingScreen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        #loadingScreen .loader {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 30px;
-        }
-        #loadingScreen .loader span {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            background: #222;
-            border-radius: 50%;
-            animation: bounce 1.2s ease-in-out infinite;
-        }
-        #loadingScreen .loader span:nth-child(2) { animation-delay: 0.15s; }
-        #loadingScreen .loader span:nth-child(3) { animation-delay: 0.3s; }
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-        #loadingScreen .status {
-            font-size: 16px;
-            letter-spacing: 0.06em;
-            font-weight: 300;
-            opacity: 0.7;
-            margin-top: 8px;
-        }
-        #loadingScreen .progress-bar {
-            width: 200px;
-            height: 2px;
-            background: #e0e0e0;
-            margin-top: 20px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        #loadingScreen .progress-bar .fill {
-            height: 100%;
-            width: 0%;
-            background: #222;
-            transition: width 0.2s linear;
-        }
-
         /* ===== TOP BAR ===== */
         #topBar {
             position: fixed;
@@ -777,13 +716,6 @@
                 font-size: clamp(18px, 4.5vw, 28px);
                 padding: 20px;
             }
-            #loadingScreen .loader span {
-                width: 10px;
-                height: 10px;
-            }
-            #loadingScreen .progress-bar {
-                width: 150px;
-            }
         }
         @media (max-width: 400px) {
             .piece {
@@ -804,19 +736,6 @@
     </style>
 </head>
 <body>
-
-    <!-- ===== LOADING SCREEN ===== -->
-    <div id="loadingScreen">
-        <div class="loader">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="status" id="loadingStatus">Загрузка …</div>
-        <div class="progress-bar">
-            <div class="fill" id="loadingProgress"></div>
-        </div>
-    </div>
 
     <!-- ===== SVG DEFS (для водяных эффектов) ===== -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -982,82 +901,6 @@
         const vnutriMusic = $('vnutriMusic');
         const abstractTextOverlay = $('abstractTextOverlay');
         const abstractHint = $('abstractHint');
-
-        // ============================================================
-        //  LOADING SCREEN
-        // ============================================================
-        const loadingScreen = $('loadingScreen');
-        const loadingStatus = $('loadingStatus');
-        const loadingProgress = $('loadingProgress');
-
-        function updateLoading(loaded, total) {
-            const percent = Math.round((loaded / total) * 100);
-            loadingProgress.style.width = percent + '%';
-            loadingStatus.textContent = `Загрузка … ${percent}%`;
-        }
-
-        function hideLoading() {
-            loadingScreen.classList.add('hidden');
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 1000);
-        }
-
-        // ============================================================
-        //  PRELOAD IMAGES
-        // ============================================================
-        function preloadImages() {
-            const imageList = [
-                // puzzle steps (0–4)
-                'media/step_0000.jpg',
-                'media/step_0001.jpg',
-                'media/step_0002.jpg',
-                'media/step_0003.jpg',
-                'media/step_0004.jpg',
-                // puzzle pieces
-                'media/peace_0000.png',
-                'media/peace_0001.png',
-                'media/peace_0002.png',
-                'media/peace_0003.png',
-                // gift puzzle steps (0–3)
-                'media/cherepaha_step_0000.jpg',
-                'media/cherepaha_step_0001.jpg',
-                'media/cherepaha_step_0002.jpg',
-                'media/cherepaha_step_0003.jpg',
-                // gift puzzle pieces
-                'media/cherepaha_peace_0000.png',
-                'media/cherepaha_peace_0001.png',
-                'media/cherepaha_peace_0002.png',
-                // gift image
-                'media/cherepaha_more.jpg',
-            ];
-
-            const total = imageList.length;
-            let loaded = 0;
-
-            return new Promise((resolve) => {
-                if (total === 0) {
-                    resolve();
-                    return;
-                }
-
-                imageList.forEach((src) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        loaded++;
-                        updateLoading(loaded, total);
-                        if (loaded === total) resolve();
-                    };
-                    img.onerror = () => {
-                        // всё равно считаем загруженным, чтобы не зависнуть
-                        loaded++;
-                        updateLoading(loaded, total);
-                        if (loaded === total) resolve();
-                    };
-                    img.src = src;
-                });
-            });
-        }
 
         // ============================================================
         //  AUDIO
@@ -2183,12 +2026,36 @@
         });
 
         // ============================================================
-        //  PUZZLE
+        //  PUZZLE — с оптимизацией отрисовки (макс. 1920×1080)
         // ============================================================
         let puzzleStep = 0;
         let puzzlePiecesPlaced = 0;
         let puzzleComplete = false;
         let dragData = null;
+
+        // === Оптимизированный размер холста с капом 1920×1080 ===
+        function sizeCanvasWithCap(canvas, maxW, maxH) {
+            const wrap = canvas.parentElement;
+            const rect = wrap.getBoundingClientRect();
+            // Берём логические пикселы (CSS-размер)
+            let w = Math.round(rect.width);
+            let h = Math.round(rect.height);
+            // Капаем на maxW × maxH (логические пикселы)
+            if (w > maxW || h > maxH) {
+                const scale = Math.min(maxW / w, maxH / h);
+                w = Math.round(w * scale);
+                h = Math.round(h * scale);
+            }
+            const dpr = window.devicePixelRatio || 1;
+            // Устанавливаем пиксельную размерность холста (не больше капа)
+            canvas.width = Math.max(1, Math.round(w * dpr));
+            canvas.height = Math.max(1, Math.round(h * dpr));
+            // CSS-размер остаётся оригинальным (растягивается через стили)
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            // Возвращаем логический размер (до применения dpr) и dpr
+            return { w: canvas.width / dpr, h: canvas.height / dpr, dpr };
+        }
 
         function goToPuzzle() {
             showPage('pagePuzzle');
@@ -2210,19 +2077,9 @@
             }
         }
 
-        function sizeCanvasToWrap(canvas) {
-            const wrap = canvas.parentElement;
-            const rect = wrap.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = Math.max(1, Math.round(rect.width * dpr));
-            canvas.height = Math.max(1, Math.round(rect.height * dpr));
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = rect.height + 'px';
-            return { w: rect.width, h: rect.height, dpr };
-        }
-
         function drawPuzzleImageCover(canvas, ctx, img) {
-            const { w, h, dpr } = sizeCanvasToWrap(canvas);
+            // Используем капнутый размер
+            const { w, h, dpr } = sizeCanvasWithCap(canvas, 1920, 1080);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, w, h);
@@ -2235,7 +2092,7 @@
         }
 
         function drawPuzzleFallback(canvas, ctx, step) {
-            const { w, h, dpr } = sizeCanvasToWrap(canvas);
+            const { w, h, dpr } = sizeCanvasWithCap(canvas, 1920, 1080);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, w, h);
@@ -2247,7 +2104,7 @@
         }
 
         function rippleRevealImage(canvas, ctx, img, duration = 900) {
-            const { w, h, dpr } = sizeCanvasToWrap(canvas);
+            const { w, h, dpr } = sizeCanvasWithCap(canvas, 1920, 1080);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             const off = document.createElement('canvas');
             off.width = Math.max(1, Math.round(w));
@@ -2597,7 +2454,7 @@
         }
 
         // ============================================================
-        //  GIFT PUZZLE
+        //  GIFT PUZZLE — с оптимизацией отрисовки (макс. 1920×1080)
         // ============================================================
         let giftPuzzleStep = 0;
         let giftPuzzlePiecesPlaced = 0;
@@ -2804,17 +2661,6 @@
         }
 
         // ============================================================
-        //  WATER MORPH BURST — функция оставлена, но вызовы удалены
-        // ============================================================
-        const svgns = 'http://www.w3.org/2000/svg';
-        const globalSvgDefs = document.getElementById('globalSvgDefs');
-        let dropFilterCounter = 0;
-
-        function spawnWaterMorphBurst(x, y) {
-            // функция не используется
-        }
-
-        // ============================================================
         //  RESIZE
         // ============================================================
         let resizeTimeout;
@@ -2850,24 +2696,15 @@
         // ============================================================
         //  INIT
         // ============================================================
-        // Сначала предзагружаем все изображения, затем показываем страницу
-        preloadImages().then(() => {
-            hideLoading();
-            // Стартовая страница уже активна, показываем её
-            showPage('pageStart');
-            // Автоматически запускаем фоновую музыку при первом клике (уже есть обработчик)
-            document.addEventListener('click', () => {
-                initAudio();
-                bgMusic.play().catch(() => {});
-            }, { once: true });
-        });
+        document.addEventListener('click', () => {
+            initAudio();
+            bgMusic.play().catch(() => {});
+        }, { once: true });
 
-        // Но мы также должны убедиться, что страница не будет активна до загрузки
-        // У нас #pageStart уже имеет класс active, но экран загрузки перекрывает его.
-        // После hideLoading всё станет видимым.
+        showPage('pageStart');
 
         console.log('✦ Подарок ✦');
-        console.log('Все системы работают — жидкость удалена.');
+        console.log('Все системы работают — отрисовка картинок оптимизирована до 1920×1080.');
         console.log('✦ МОРЕ ВНУТРИ автоматически включится после первого сбора пазла "Дом на берегу моря"');
     </script>
 </body>
