@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Подарок</title>
+    <title>Подарок Черепахе</title>
     <style>
+        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
@@ -21,6 +22,7 @@
             position: relative;
         }
 
+        /* ===== TOP BAR ===== */
         #topBar {
             position: fixed;
             top: 0;
@@ -36,8 +38,9 @@
             z-index: 999;
             font-size: 18px;
             letter-spacing: 0.04em;
-            transition: background 0.4s ease, border-color 0.4s ease;
+            transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
             pointer-events: none;
+            color: #111;
         }
         #topBar.dark {
             background: #000000;
@@ -65,6 +68,7 @@
             display: flex;
             gap: 14px;
             align-items: center;
+            flex-wrap: wrap;
         }
         .topBtn {
             background: transparent;
@@ -117,6 +121,7 @@
             line-height: 1;
         }
 
+        /* ===== PAGES ===== */
         .page {
             position: fixed;
             top: 56px;
@@ -145,6 +150,7 @@
             pointer-events: none;
         }
 
+        /* ===== START PAGE ===== */
         #pageStart {
             background: #fff;
             text-align: center;
@@ -286,6 +292,7 @@
             }
         }
 
+        /* ===== ABSTRACT PAGE ===== */
         #pageAbstract {
             background: #fff;
             padding: 0;
@@ -299,7 +306,6 @@
             cursor: pointer;
             background: #fff;
         }
-
         .abstract-text-overlay {
             position: fixed;
             top: 56px;
@@ -331,7 +337,6 @@
             color: #111;
             text-shadow: 0 2px 40px rgba(255, 255, 255, 0.3);
         }
-
         #pageAbstract .click-hint {
             position: fixed;
             bottom: 80px;
@@ -355,6 +360,7 @@
             text-shadow: none;
         }
 
+        /* ===== STORY PAGE ===== */
         #pageStory {
             background: #fff;
             text-align: center;
@@ -399,6 +405,7 @@
             border: 2px solid #111;
         }
 
+        /* ===== FINAL STORY ===== */
         #pageFinalStory {
             background: #000;
             color: #fff;
@@ -464,6 +471,7 @@
             transform: scale(0.97);
         }
 
+        /* ===== PUZZLE PAGES ===== */
         #pagePuzzle,
         #pageGiftPuzzle {
             background: #111;
@@ -596,11 +604,11 @@
         .piece.dragging img {
             filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.7));
         }
+        /* Убираем анимацию появления/исчезновения кусочков — мгновенное исчезновение */
         .piece.placed {
             opacity: 0;
             transform: scale(0.6);
             pointer-events: none;
-            transition: all 0.5s ease;
             width: 0;
             height: 0;
             margin: 0;
@@ -608,8 +616,10 @@
             border: none;
             overflow: hidden;
             flex: 0 0 0;
+            transition: none;
         }
 
+        /* ===== GIFT PAGE ===== */
         #pageGift {
             background: #000;
             padding: 0;
@@ -630,48 +640,7 @@
             opacity: 1;
         }
 
-        /* ============================================================
-           WATER SURFACE CURSOR
-           ============================================================ */
-        #waterFieldWrap {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 0;
-            height: 0;
-            pointer-events: none;
-            z-index: 900;
-            will-change: transform;
-        }
-        #waterField {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: var(--water-size, 560px);
-            height: var(--water-size, 560px);
-            margin-left: calc(var(--water-size, 560px) / -2);
-            margin-top: calc(var(--water-size, 560px) / -2);
-            border-radius: 50%;
-            pointer-events: none;
-            will-change: transform;
-            backdrop-filter: url(#waterFilter);
-            -webkit-backdrop-filter: url(#waterFilter);
-            opacity: 0.94;
-            transition: opacity 0.4s ease;
-        }
-        #waterField.pressed {
-            opacity: 1;
-        }
-
-        .water-drop {
-            position: fixed;
-            left: 0;
-            top: 0;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 950;
-        }
-
+        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -683,6 +652,7 @@
             border-radius: 4px;
         }
 
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
             #topBar {
                 padding: 0 14px;
@@ -764,332 +734,16 @@
                 height: 54px;
             }
         }
-
-        /* ============================================================
-           SETTINGS MENU (Alt+Q / Alt+Й)
-           ============================================================ */
-        #settingsOverlay {
-            position: fixed;
-            inset: 0;
-            z-index: 10000;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #settingsOverlay.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        #settingsPanel {
-            background: rgba(18, 18, 22, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 32px 40px 28px;
-            max-width: 480px;
-            width: 92%;
-            color: #f0f0f0;
-            font-family: 'Georgia', 'Times New Roman', serif;
-            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transform: scale(0.94) translateY(12px);
-            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
-            opacity: 0;
-            max-height: 92vh;
-            overflow-y: auto;
-        }
-        #settingsOverlay.open #settingsPanel {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-
-        #settingsPanel::-webkit-scrollbar {
-            width: 3px;
-        }
-        #settingsPanel::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-        #settingsPanel::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #settingsPanel .sp-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        #settingsPanel .sp-header h2 {
-            font-size: 20px;
-            font-weight: 400;
-            letter-spacing: 0.06em;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        #settingsPanel .sp-header h2 span {
-            opacity: 0.5;
-            font-size: 14px;
-            font-weight: 300;
-        }
-        #settingsPanel .sp-close {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 26px;
-            cursor: pointer;
-            padding: 0 6px;
-            transition: color 0.2s ease, transform 0.2s ease;
-            line-height: 1;
-        }
-        #settingsPanel .sp-close:hover {
-            color: #fff;
-            transform: scale(1.12);
-        }
-
-        #settingsPanel .sp-group {
-            margin-bottom: 18px;
-        }
-        #settingsPanel .sp-group-label {
-            font-size: 11px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.25);
-            margin-bottom: 12px;
-            font-weight: 300;
-        }
-
-        #settingsPanel .sp-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 10px;
-        }
-        #settingsPanel .sp-row:last-child {
-            margin-bottom: 0;
-        }
-        #settingsPanel .sp-row label {
-            font-size: 14px;
-            letter-spacing: 0.02em;
-            color: rgba(255, 255, 255, 0.7);
-            min-width: 100px;
-            font-weight: 300;
-        }
-        #settingsPanel .sp-row input[type="range"] {
-            flex: 1;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 3px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.15);
-            outline: none;
-            transition: background 0.2s ease;
-        }
-        #settingsPanel .sp-row input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        #settingsPanel .sp-row input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.14);
-        }
-        #settingsPanel .sp-row input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: none;
-            background: #fff;
-            cursor: pointer;
-        }
-        #settingsPanel .sp-row .sp-value {
-            min-width: 44px;
-            text-align: right;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.85);
-            font-weight: 300;
-            font-variant-numeric: tabular-nums;
-        }
-
-        #settingsPanel .sp-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 22px;
-            padding-top: 18px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        #settingsPanel .sp-btn {
-            flex: 1;
-            padding: 10px 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
-            background: transparent;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: inherit;
-            font-size: 14px;
-            letter-spacing: 0.04em;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-align: center;
-            font-weight: 300;
-        }
-        #settingsPanel .sp-btn:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-        #settingsPanel .sp-btn.sp-reset {
-            flex: 0.6;
-            border-color: rgba(255, 200, 150, 0.15);
-            color: rgba(255, 200, 150, 0.5);
-        }
-        #settingsPanel .sp-btn.sp-reset:hover {
-            border-color: rgba(255, 200, 150, 0.3);
-            color: rgba(255, 200, 150, 0.8);
-            background: rgba(255, 200, 150, 0.06);
-        }
-
-        #settingsPanel .sp-hint {
-            margin-top: 14px;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.15);
-            letter-spacing: 0.06em;
-            text-align: center;
-            font-weight: 300;
-        }
-
-        @media (max-width: 520px) {
-            #settingsPanel {
-                padding: 24px 18px 20px;
-                border-radius: 18px;
-            }
-            #settingsPanel .sp-row label {
-                min-width: 70px;
-                font-size: 13px;
-            }
-            #settingsPanel .sp-row .sp-value {
-                min-width: 34px;
-                font-size: 13px;
-            }
-            #settingsPanel .sp-header h2 {
-                font-size: 17px;
-            }
-            #settingsPanel .sp-btn {
-                font-size: 13px;
-                padding: 8px 0;
-            }
-        }
     </style>
 </head>
 <body>
 
+    <!-- ===== SVG DEFS (для водяных эффектов) ===== -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <defs id="globalSvgDefs">
-            <!-- WATER FILTER — the feDisplacementMap scale is updated dynamically via JS -->
-            <filter id="waterFilter" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-                <feImage id="waterMapImage" x="0" y="0" width="100%" height="100%" result="waterMap" preserveAspectRatio="none" />
-                <feGaussianBlur in="waterMap" stdDeviation="1.1" result="waterMapSmooth" />
-                <feDisplacementMap id="waterDisplace" in="SourceGraphic" in2="waterMapSmooth" scale="46" xChannelSelector="R" yChannelSelector="G" result="warped" />
-                <feColorMatrix in="waterMapSmooth" type="matrix"
-                    values="0 0 0 0 0
-                            0 0 0 0 0
-                            0 0 0 0 0
-                            0 0 1 0 0"
-                    result="heightAlpha" />
-                <feGaussianBlur in="heightAlpha" stdDeviation="1.6" result="heightSmooth" />
-                <feSpecularLighting in="heightSmooth" surfaceScale="7" specularConstant="0.8" specularExponent="22" lighting-color="#eaf6ff" result="spec">
-                    <fePointLight x="45%" y="32%" z="120" />
-                </feSpecularLighting>
-                <feComposite in="spec" in2="SourceAlpha" operator="in" result="specClip" />
-                <feComponentTransfer in="warped" result="tinted">
-                    <feFuncR type="linear" slope="1.0" intercept="0.0" />
-                    <feFuncG type="linear" slope="1.01" intercept="0.003" />
-                    <feFuncB type="linear" slope="1.03" intercept="0.008" />
-                </feComponentTransfer>
-                <feBlend in="tinted" in2="specClip" mode="screen" />
-            </filter>
-        </defs>
+        <defs id="globalSvgDefs"></defs>
     </svg>
 
-    <!-- SETTINGS MENU (Alt+Q / Alt+Й) -->
-    <div id="settingsOverlay">
-        <div id="settingsPanel" role="dialog" aria-label="Настройки жидкости курсора">
-            <div class="sp-header">
-                <h2>🌊 Настройки жидкости <span>Alt+Q</span></h2>
-                <button class="sp-close" id="settingsClose" aria-label="Закрыть настройки">✕</button>
-            </div>
-
-            <div class="sp-group">
-                <div class="sp-group-label">Симуляция волн</div>
-                <div class="sp-row">
-                    <label for="setGrid">Сетка</label>
-                    <input type="range" id="setGrid" min="28" max="120" value="64" step="2" />
-                    <span class="sp-value" id="valGrid">64</span>
-                </div>
-                <div class="sp-row">
-                    <label for="setDamping">Затухание</label>
-                    <input type="range" id="setDamping" min="900" max="999" value="982" step="1" />
-                    <span class="sp-value" id="valDamping">0.982</span>
-                </div>
-                <div class="sp-row">
-                    <label for="setScale">Смещение</label>
-                    <input type="range" id="setScale" min="8" max="100" value="46" step="1" />
-                    <span class="sp-value" id="valScale">46</span>
-                </div>
-            </div>
-
-            <div class="sp-group">
-                <div class="sp-group-label">Взаимодействие</div>
-                <div class="sp-row">
-                    <label for="setStrength">Сила нажатия</label>
-                    <input type="range" id="setStrength" min="2" max="40" value="16" step="0.5" />
-                    <span class="sp-value" id="valStrength">16</span>
-                </div>
-                <div class="sp-row">
-                    <label for="setRadius">Радиус</label>
-                    <input type="range" id="setRadius" min="1" max="14" value="5.5" step="0.1" />
-                    <span class="sp-value" id="valRadius">5.5</span>
-                </div>
-            </div>
-
-            <div class="sp-group">
-                <div class="sp-group-label">Внешний вид</div>
-                <div class="sp-row">
-                    <label for="setFieldSize">Размер поля</label>
-                    <input type="range" id="setFieldSize" min="200" max="700" value="450" step="10" />
-                    <span class="sp-value" id="valFieldSize">450</span>
-                </div>
-                <div class="sp-row">
-                    <label for="setOpacity">Прозрачность</label>
-                    <input type="range" id="setOpacity" min="30" max="100" value="94" step="1" />
-                    <span class="sp-value" id="valOpacity">0.94</span>
-                </div>
-            </div>
-
-            <div class="sp-actions">
-                <button class="sp-btn sp-reset" id="settingsReset">↺ Сбросить</button>
-                <button class="sp-btn" id="settingsCloseBtn">Закрыть</button>
-            </div>
-            <div class="sp-hint">ESC или Alt+Q для закрытия</div>
-        </div>
-    </div>
-
+    <!-- ===== TOP BAR ===== -->
     <header id="topBar">
         <span class="title">Подарок</span>
         <div class="rightBtns">
@@ -1098,11 +752,12 @@
             <button class="topBtn" id="btnAbstract">К абстракциям</button>
             <button class="topBtn" id="btnStory">Путешествия Черепахи</button>
             <button class="topBtn" id="btnHouse">"Дом на берегу моря"</button>
-            <button class="topBtn" id="btnGift">Дополнительный подарок. СДЕЛАННЫЙ 100% БЕЗ НЕЙРОНОК</button>
+            <button class="topBtn" id="btnGift">ДОПОЛНИТЕЛЬНЫЙ ПОДАРОК. СДЕЛАННЫЙ 100% БЕЗ НЕЙРОНОК</button>
             <button class="topBtn iconBtn show" id="btnFullscreen" title="Полный экран">⛶</button>
         </div>
     </header>
 
+    <!-- ===== PAGES ===== -->
     <section id="pageStart" class="page active">
         <div class="question">Кто <span class="jitter-word">ты</span>?</div>
         <div class="options" id="optionsContainer">
@@ -1149,16 +804,14 @@
         <img id="giftImage" src="media/cherepaha_more.jpg" alt="Подарок" />
     </section>
 
-    <audio id="bgMusic" loop preload="auto">
-        <source src="media/kosmos.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="puzzleMusic" loop preload="auto">
-        <source src="media/more.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="vnutriMusic" loop preload="auto">
-        <source src="media/vnutri.mp3" type="audio/mpeg">
-    </audio>
+    <!-- ===== AUDIO ===== -->
+    <audio id="bgMusic" loop preload="auto"><source src="media/kosmos.mp3" type="audio/mpeg"></audio>
+    <audio id="puzzleMusic" loop preload="auto"><source src="media/more.mp3" type="audio/mpeg"></audio>
+    <audio id="vnutriMusic" loop preload="auto"><source src="media/vnutri.mp3" type="audio/mpeg"></audio>
 
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ============================================================ -->
     <script>
         // ============================================================
         //  STATE
@@ -1175,9 +828,10 @@
             audioCtx: null,
             abstractTextIndex: 0,
             abstractTextShown: false,
-            abstractSquareClicked: false,
             isAbstractTextMode: false,
             buttonsUnlocked: false,
+            giftPuzzleComplete: false,
+            hasAutoStartedVnutri: false,
         };
 
         const storyLines = [
@@ -1219,6 +873,7 @@
         const pageFinalStory = $('pageFinalStory');
         const pagePuzzle = $('pagePuzzle');
         const pageGift = $('pageGift');
+        const pageGiftPuzzle = $('pageGiftPuzzle');
         const topBar = $('topBar');
         const btnFullscreen = $('btnFullscreen');
         const btnHome = $('btnHome');
@@ -1306,44 +961,37 @@
             return buffer;
         }
 
-        function playWoosh(volume = 0.14) {
+        function playSoftClick(volume = 0.07) {
             try {
                 initAudio();
                 const c = state.audioCtx;
                 const t = c.currentTime;
                 const out = c.createGain();
                 out.gain.value = volume;
-
-                const noise = c.createBufferSource();
-                noise.buffer = makeNoiseBuffer(c, 1.1, 1.5);
-                const filter = c.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.Q.value = 0.7;
-                filter.frequency.setValueAtTime(1100, t);
-                filter.frequency.exponentialRampToValueAtTime(55, t + 1.0);
-                const ng = c.createGain();
-                ng.gain.setValueAtTime(0.0001, t);
-                ng.gain.exponentialRampToValueAtTime(1, t + 0.2);
-                ng.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
-                noise.connect(filter);
-                filter.connect(ng);
-                ng.connect(out);
-
-                const sub = c.createOscillator();
-                sub.type = 'sine';
-                sub.frequency.setValueAtTime(85, t);
-                sub.frequency.exponentialRampToValueAtTime(24, t + 0.9);
+                const osc = c.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(210, t);
+                osc.frequency.exponentialRampToValueAtTime(120, t + 0.22);
+                const g = c.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(1, t + 0.008);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+                osc.connect(g);
+                g.connect(out);
+                const shimmer = c.createOscillator();
+                shimmer.type = 'sine';
+                shimmer.frequency.setValueAtTime(1480, t);
                 const sg = c.createGain();
-                sg.gain.setValueAtTime(0.6, t);
-                sg.gain.exponentialRampToValueAtTime(0.0008, t + 1.0);
-                sub.connect(sg);
+                sg.gain.setValueAtTime(0.0001, t);
+                sg.gain.exponentialRampToValueAtTime(0.2, t + 0.006);
+                sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+                shimmer.connect(sg);
                 sg.connect(out);
-
-                routeSound(out, 0.5);
-                noise.start(t);
-                noise.stop(t + 1.1);
-                sub.start(t);
-                sub.stop(t + 1.0);
+                routeSound(out, 0.3);
+                osc.start(t);
+                osc.stop(t + 0.32);
+                shimmer.start(t);
+                shimmer.stop(t + 0.2);
             } catch (_) {}
         }
 
@@ -1354,7 +1002,6 @@
                 const t = c.currentTime;
                 const out = c.createGain();
                 out.gain.value = volume;
-
                 const partials = [
                     { f: 220.0, d: 0, amp: 0.7, dur: 2.4 },
                     { f: 329.6, d: 5, amp: 0.45, dur: 2.1 },
@@ -1376,7 +1023,6 @@
                     osc.start(t);
                     osc.stop(t + p.dur + 0.05);
                 });
-
                 routeSound(out, 0.6);
             } catch (_) {}
         }
@@ -1388,7 +1034,6 @@
                 const t = c.currentTime;
                 const out = c.createGain();
                 out.gain.value = volume;
-
                 const sub = c.createOscillator();
                 sub.type = 'sine';
                 sub.frequency.setValueAtTime(65, t);
@@ -1398,7 +1043,6 @@
                 sg.gain.exponentialRampToValueAtTime(0.0008, t + 1.3);
                 sub.connect(sg);
                 sg.connect(out);
-
                 const growl = c.createOscillator();
                 growl.type = 'sawtooth';
                 growl.frequency.setValueAtTime(42, t);
@@ -1412,7 +1056,6 @@
                 growl.connect(gf);
                 gf.connect(gg);
                 gg.connect(out);
-
                 const thud = c.createBufferSource();
                 thud.buffer = makeNoiseBuffer(c, 0.35, 2.5);
                 const tf = c.createBiquadFilter();
@@ -1423,7 +1066,6 @@
                 thud.connect(tf);
                 tf.connect(tg);
                 tg.connect(out);
-
                 routeSound(out, 0.55);
                 sub.start(t);
                 sub.stop(t + 1.3);
@@ -1434,40 +1076,41 @@
             } catch (_) {}
         }
 
-        function playSoftClick(volume = 0.07) {
+        function playWoosh(volume = 0.14) {
             try {
                 initAudio();
                 const c = state.audioCtx;
                 const t = c.currentTime;
                 const out = c.createGain();
                 out.gain.value = volume;
-
-                const osc = c.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(210, t);
-                osc.frequency.exponentialRampToValueAtTime(120, t + 0.22);
-                const g = c.createGain();
-                g.gain.setValueAtTime(0.0001, t);
-                g.gain.exponentialRampToValueAtTime(1, t + 0.008);
-                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-                osc.connect(g);
-                g.connect(out);
-
-                const shimmer = c.createOscillator();
-                shimmer.type = 'sine';
-                shimmer.frequency.setValueAtTime(1480, t);
-                const sg = c.createGain();
-                sg.gain.setValueAtTime(0.0001, t);
-                sg.gain.exponentialRampToValueAtTime(0.2, t + 0.006);
-                sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-                shimmer.connect(sg);
-                sg.connect(out);
-
-                routeSound(out, 0.3);
-                osc.start(t);
-                osc.stop(t + 0.32);
-                shimmer.start(t);
-                shimmer.stop(t + 0.2);
+                const noise = c.createBufferSource();
+                noise.buffer = makeNoiseBuffer(c, 1.1, 1.5);
+                const filter = c.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.Q.value = 0.7;
+                filter.frequency.setValueAtTime(1100, t);
+                filter.frequency.exponentialRampToValueAtTime(55, t + 1.0);
+                const ng = c.createGain();
+                ng.gain.setValueAtTime(0.0001, t);
+                ng.gain.exponentialRampToValueAtTime(1, t + 0.2);
+                ng.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+                noise.connect(filter);
+                filter.connect(ng);
+                ng.connect(out);
+                const sub = c.createOscillator();
+                sub.type = 'sine';
+                sub.frequency.setValueAtTime(85, t);
+                sub.frequency.exponentialRampToValueAtTime(24, t + 0.9);
+                const sg2 = c.createGain();
+                sg2.gain.setValueAtTime(0.6, t);
+                sg2.gain.exponentialRampToValueAtTime(0.0008, t + 1.0);
+                sub.connect(sg2);
+                sg2.connect(out);
+                routeSound(out, 0.5);
+                noise.start(t);
+                noise.stop(t + 1.1);
+                sub.start(t);
+                sub.stop(t + 1.0);
             } catch (_) {}
         }
 
@@ -1478,7 +1121,6 @@
                 const t = c.currentTime;
                 const out = c.createGain();
                 out.gain.value = volume;
-
                 const noise = c.createBufferSource();
                 noise.buffer = makeNoiseBuffer(c, 1.6, 1.2);
                 const filter = c.createBiquadFilter();
@@ -1494,7 +1136,6 @@
                 noise.connect(filter);
                 filter.connect(ng);
                 ng.connect(out);
-
                 const lfo = c.createOscillator();
                 lfo.type = 'sine';
                 lfo.frequency.value = 3.2;
@@ -1502,13 +1143,36 @@
                 lfoGain.gain.value = 300;
                 lfo.connect(lfoGain);
                 lfoGain.connect(filter.frequency);
-
                 routeSound(out, 0.6);
                 noise.start(t);
                 noise.stop(t + 1.6);
                 lfo.start(t);
                 lfo.stop(t + 1.6);
             } catch (_) {}
+        }
+
+        // ============================================================
+        //  УПРАВЛЕНИЕ МУЗЫКОЙ "МОРЕ ВНУТРИ"
+        // ============================================================
+        let vnutriPlaying = false;
+
+        function startVnutriMusic() {
+            initAudio();
+            bgMusic.pause();
+            puzzleMusic.pause();
+            vnutriMusic.currentTime = 0;
+            vnutriMusic.play().catch(() => {});
+            vnutriPlaying = true;
+            btnMusic.classList.add('active');
+            btnMusic.textContent = '♪ Выключить музыку «МОРЕ ВНУТРИ»';
+        }
+
+        function stopVnutriMusic() {
+            vnutriMusic.pause();
+            vnutriMusic.currentTime = 0;
+            vnutriPlaying = false;
+            btnMusic.classList.remove('active');
+            btnMusic.textContent = '♪ МОРЕ ВНУТРИ';
         }
 
         // ============================================================
@@ -1524,9 +1188,6 @@
                 topBar.classList.add('dark');
             } else {
                 topBar.classList.remove('dark');
-            }
-            if (typeof setCursorGooTheme === 'function') {
-                setCursorGooTheme(darkPages.includes(id));
             }
             if (state.buttonsUnlocked) {
                 btnHome.classList.add('show');
@@ -1575,6 +1236,7 @@
             state.abstractTextShown = false;
             state.isAbstractTextMode = false;
             state.abstractSquareClicked = false;
+            state.giftPuzzleComplete = false;
             document.querySelectorAll('.option').forEach(el => {
                 el.classList.remove('removed');
                 el.style.display = '';
@@ -1618,6 +1280,10 @@
                 window._abstractAnimId = null;
             }
             document.querySelectorAll('.option').forEach(el => el.style.display = '');
+            giftPuzzleStep = 0;
+            giftPuzzlePiecesPlaced = 0;
+            giftPuzzleComplete = false;
+            state.giftPuzzleComplete = false;
         }
 
         function goToGift() {
@@ -1681,7 +1347,7 @@
         btnGift.addEventListener('click', goToGiftPuzzle);
 
         // ============================================================
-        //  FULLSCREEN TOGGLE
+        //  FULLSCREEN
         // ============================================================
         function isFullscreenActive() {
             return !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -1715,27 +1381,12 @@
         // ============================================================
         //  "ВНУТРИ" MUSIC TOGGLE
         // ============================================================
-        let vnutriPlaying = false;
-
-        function stopVnutriMusic() {
-            vnutriMusic.pause();
-            vnutriMusic.currentTime = 0;
-            vnutriPlaying = false;
-            btnMusic.classList.remove('active');
-            btnMusic.textContent = '♪ МОРЕ ВНУТРИ';
-        }
         btnMusic.addEventListener('click', () => {
             playSoftClick();
             if (vnutriPlaying) {
                 stopVnutriMusic();
             } else {
-                bgMusic.pause();
-                puzzleMusic.pause();
-                vnutriMusic.currentTime = 0;
-                vnutriMusic.play().catch(() => {});
-                vnutriPlaying = true;
-                btnMusic.classList.add('active');
-                btnMusic.textContent = '♪ Выключить музыку «МОРЕ ВНУТРИ»';
+                startVnutriMusic();
             }
         });
 
@@ -1909,10 +1560,8 @@
             ctx.clearRect(0, 0, w, h);
             ctx.fillStyle = inverted ? '#000' : '#fff';
             ctx.fillRect(0, 0, w, h);
-
             const blackSquare = shapes.find(s => s.isBlackSquare);
             const others = shapes.filter(s => !s.isBlackSquare);
-
             others.forEach(s => drawShape(ctx, s, inverted));
             if (blackSquare) drawShape(ctx, blackSquare, inverted);
         }
@@ -1927,7 +1576,6 @@
             ctx.fillStyle = color;
             ctx.strokeStyle = color;
             ctx.lineWidth = s.thick || 1.5;
-
             if (s.type === 'circle') {
                 ctx.beginPath();
                 ctx.arc(0, 0, s.r || s.size * 0.5, 0, Math.PI * 2);
@@ -2011,7 +1659,6 @@
             const rect = abstractCanvas.parentElement.getBoundingClientRect();
             const { w, h } = resizeAbstractCanvas();
             ctx.clearRect(0, 0, w, h);
-
             state.abstractClickCount = 0;
             state.abstractComposition = 0;
             abstractIsInverted = false;
@@ -2023,10 +1670,8 @@
             abstractTextOverlay.textContent = '';
             abstractTextOverlay.classList.remove('show', 'dark-text');
             abstractHint.classList.remove('show', 'dark');
-
             abstractShapes = generateAbstractComposition(w, h, state.abstractComposition);
             drawAbstractShapes(ctx, w, h, abstractShapes, false);
-
             if (abstractAnimId) cancelAnimationFrame(abstractAnimId);
 
             function animate() {
@@ -2102,7 +1747,6 @@
                             document.body.appendChild(flash);
                             setTimeout(() => { flash.style.opacity = '0';
                                 setTimeout(() => flash.remove(), 400); }, 200);
-
                             setTimeout(() => {
                                 state.isAbstractTextMode = true;
                                 state.abstractTextIndex = 0;
@@ -2237,25 +1881,6 @@
             fsContent.style.filter = '';
             fsContent.style.transform = '';
             fsTransitioning = false;
-        }
-
-        function fadeToBlackTransition(callback, { fadeIn = 650, hold = 250, fadeOut = 900 } = {}) {
-            const overlay = document.createElement('div');
-            overlay.style.cssText =
-                'position:fixed;inset:0;background:#000;z-index:99999;opacity:0;' +
-                'pointer-events:none;transition:opacity ' + (fadeIn / 1000) + 's ease;';
-            document.body.appendChild(overlay);
-            requestAnimationFrame(() => {
-                overlay.style.opacity = '1';
-            });
-            setTimeout(() => {
-                callback();
-                setTimeout(() => {
-                    overlay.style.transition = 'opacity ' + (fadeOut / 1000) + 's ease';
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.remove(), fadeOut + 50);
-                }, hold);
-            }, fadeIn);
         }
 
         function waveTransitionOverlay(callback, { riseDuration = 700, hold = 150, fallDuration = 750 } = {}) {
@@ -2429,9 +2054,6 @@
             }
         }
 
-        // ============================================================
-        //  SHARED: full-screen "cover" drawing for puzzle canvases
-        // ============================================================
         function sizeCanvasToWrap(canvas) {
             const wrap = canvas.parentElement;
             const rect = wrap.getBoundingClientRect();
@@ -2471,7 +2093,6 @@
         function rippleRevealImage(canvas, ctx, img, duration = 900) {
             const { w, h, dpr } = sizeCanvasToWrap(canvas);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
             const off = document.createElement('canvas');
             off.width = Math.max(1, Math.round(w));
             off.height = Math.max(1, Math.round(h));
@@ -2484,7 +2105,6 @@
             octx.fillStyle = '#0a0a0a';
             octx.fillRect(0, 0, off.width, off.height);
             octx.drawImage(img, ix, iy, iw, ih);
-
             let srcData;
             try {
                 srcData = octx.getImageData(0, 0, off.width, off.height);
@@ -2495,7 +2115,6 @@
             const src = srcData.data;
             const outData = octx.createImageData(off.width, off.height);
             const out = outData.data;
-
             const cx = off.width / 2;
             const cy = off.height / 2;
             const maxR = Math.sqrt(cx * cx + cy * cy) || 1;
@@ -2508,7 +2127,6 @@
                 const amp = 20 * (1 - progress) * (1 - progress);
                 const waveFreq = 0.05;
                 const timeShift = t * 0.02;
-
                 for (let y = 0; y < off.height; y += step) {
                     for (let x = 0; x < off.width; x += step) {
                         const dx = x - cx,
@@ -2537,7 +2155,6 @@
                 octx.putImageData(outData, 0, 0);
                 ctx.clearRect(0, 0, w, h);
                 ctx.drawImage(off, 0, 0, w, h);
-
                 if (progress < 1) {
                     requestAnimationFrame(frame);
                 } else {
@@ -2547,9 +2164,6 @@
             requestAnimationFrame(frame);
         }
 
-        // ============================================================
-        //  ZOOM / PAN
-        // ============================================================
         function createZoomPan(canvas) {
             let scale = 1,
                 tx = 0,
@@ -2718,7 +2332,7 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placePiece(idx);
-                spawnWaterMorphBurst(cx, cy);
+                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             dragData = null;
@@ -2773,7 +2387,7 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placePiece(idx);
-                spawnWaterMorphBurst(cx, cy);
+                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             dragData = null;
@@ -2783,8 +2397,8 @@
             if (idx !== puzzlePiecesPlaced) return;
             puzzlePiecesPlaced++;
             puzzleStep = puzzlePiecesPlaced;
-            loadPuzzleStep(puzzleStep, true);
-
+            // Выключаем ripple-эффект — передаём false
+            loadPuzzleStep(puzzleStep, false);
             const pieces = puzzlePieces.querySelectorAll('.piece');
             pieces.forEach((p, i) => {
                 if (i < puzzlePiecesPlaced) {
@@ -2805,7 +2419,6 @@
                 }
             });
             playDeepImpact(0.08);
-
             if (puzzlePiecesPlaced >= 4) {
                 puzzleComplete = true;
                 state.puzzleComplete = true;
@@ -2819,6 +2432,13 @@
                     btnHouse.classList.add('show');
                     btnStory.classList.add('show');
                     playDing(0.2);
+
+                    if (!state.hasAutoStartedVnutri && !vnutriPlaying) {
+                        startVnutriMusic();
+                        state.hasAutoStartedVnutri = true;
+                    } else if (!state.hasAutoStartedVnutri && vnutriPlaying) {
+                        state.hasAutoStartedVnutri = true;
+                    }
                 }, 500);
             }
         }
@@ -2929,7 +2549,7 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placeGiftPiece(idx);
-                spawnWaterMorphBurst(cx, cy);
+                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             giftDragData = null;
@@ -2984,7 +2604,7 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placeGiftPiece(idx);
-                spawnWaterMorphBurst(cx, cy);
+                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             giftDragData = null;
@@ -2994,8 +2614,8 @@
             if (idx !== giftPuzzlePiecesPlaced) return;
             giftPuzzlePiecesPlaced++;
             giftPuzzleStep = giftPuzzlePiecesPlaced;
-            loadGiftPuzzleStep(giftPuzzleStep, true);
-
+            // Выключаем ripple-эффект — передаём false
+            loadGiftPuzzleStep(giftPuzzleStep, false);
             const pieces = giftPuzzlePieces.querySelectorAll('.piece');
             pieces.forEach((p, i) => {
                 if (i < giftPuzzlePiecesPlaced) {
@@ -3016,7 +2636,6 @@
                 }
             });
             playDeepImpact(0.08);
-
             if (giftPuzzlePiecesPlaced >= 3) {
                 giftPuzzleComplete = true;
                 state.giftPuzzleComplete = true;
@@ -3035,480 +2654,14 @@
         }
 
         // ============================================================
-        //  LIQUID GLASS CURSOR — WATER SIMULATION
-        //  (Params are now live-adjustable via the settings menu)
+        //  WATER MORPH BURST — функция оставлена, но вызовы удалены
         // ============================================================
-
-        function clampByte(v) { return v < 0 ? 0 : v > 255 ? 255 : v | 0; }
-
-        function makeHeightCanvas(size) {
-            const c = document.createElement('canvas');
-            c.width = size;
-            c.height = size;
-            return { canvas: c, ctx: c.getContext('2d') };
-        }
-
-        function writeWaterImage(height, gw, gh, canvas, ctx, edgeFade) {
-            let maxH = 0;
-            for (let i = 0; i < height.length; i++) {
-                const a = Math.abs(height[i]);
-                if (a > maxH) maxH = a;
-            }
-            if (maxH < 0.04) return null;
-
-            const norm = 92 / maxH;
-            const img = ctx.createImageData(gw, gh);
-            const data = img.data;
-            for (let y = 0; y < gh; y++) {
-                const y0 = y > 0 ? y - 1 : 0,
-                    y1 = y < gh - 1 ? y + 1 : gh - 1;
-                for (let x = 0; x < gw; x++) {
-                    const x0 = x > 0 ? x - 1 : 0,
-                        x1 = x < gw - 1 ? x + 1 : gw - 1;
-                    const i = y * gw + x;
-                    const fade = edgeFade ? edgeFade(x, y) : 1;
-                    const dx = (height[y * gw + x1] - height[y * gw + x0]) * norm * fade;
-                    const dy = (height[y1 * gw + x] - height[y0 * gw + x]) * norm * fade;
-                    const hh = height[i] * norm * fade;
-                    const idx = i * 4;
-                    data[idx] = clampByte(128 + dx);
-                    data[idx + 1] = clampByte(128 + dy);
-                    data[idx + 2] = clampByte(128 + hh);
-                    data[idx + 3] = 255;
-                }
-            }
-            ctx.putImageData(img, 0, 0);
-            return canvas.toDataURL();
-        }
-
-        function stepWater(cur, prev, w, h, damping) {
-            for (let y = 1; y < h - 1; y++) {
-                const row = y * w,
-                    rowUp = row - w,
-                    rowDown = row + w;
-                for (let x = 1; x < w - 1; x++) {
-                    const i = row + x;
-                    prev[i] = ((cur[i - 1] + cur[i + 1] + cur[rowUp + x] + cur[rowDown + x]) * 0.5 - prev[i]) * damping;
-                }
-            }
-        }
-
-        function splatWater(buf, w, h, gx, gy, strength, radius) {
-            const x0 = Math.max(1, Math.floor(gx - radius)),
-                x1 = Math.min(w - 2, Math.ceil(gx + radius));
-            const y0 = Math.max(1, Math.floor(gy - radius)),
-                y1 = Math.min(h - 2, Math.ceil(gy + radius));
-            for (let y = y0; y <= y1; y++) {
-                for (let x = x0; x <= x1; x++) {
-                    const d = Math.hypot(x - gx, y - gy) / radius;
-                    if (d > 1) continue;
-                    const falloff = Math.cos(d * Math.PI * 0.5);
-                    buf[y * w + x] += strength * falloff * falloff;
-                }
-            }
-        }
-
-        // --- water settings (live) ---
-        const waterSettings = {
-            gridSize: 64,
-            damping: 0.982,
-            displaceScale: 46,
-            strength: 16,
-            radius: 5.5,
-            fieldSize: 450,
-            opacity: 0.94,
-        };
-
-        let waterW = waterSettings.gridSize;
-        let waterH = waterSettings.gridSize;
-        let waterCur = new Float32Array(waterW * waterH);
-        let waterPrev = new Float32Array(waterW * waterH);
-        let WATER_DAMPING = waterSettings.damping;
-        let WATER_DISPLACE_SCALE = waterSettings.displaceScale;
-
-        function waterEdgeFade(x, y) {
-            const cx = (waterW - 1) / 2,
-                cy = (waterH - 1) / 2;
-            const maxR = Math.min(cx, cy);
-            const r = Math.hypot(x - cx, y - cy) / maxR;
-            if (r >= 1) return 0;
-            return r > 0.7 ? Math.max(0, 1 - (r - 0.7) / 0.3) : 1;
-        }
-
-        function getWaterFieldSize() {
-            return Math.max(200, Math.min(700, window.innerWidth * 0.62, window.innerHeight * 0.62));
-        }
-        let waterFieldSize = waterSettings.fieldSize;
-        document.documentElement.style.setProperty('--water-size', waterFieldSize + 'px');
-
-        const { canvas: waterCanvas, ctx: waterCtx } = makeHeightCanvas(waterW);
-        const waterMapImage = document.getElementById('waterMapImage');
-        let waterMapIsFlat = true;
-
-        const waterFieldWrap = document.createElement('div');
-        waterFieldWrap.id = 'waterFieldWrap';
-        const waterField = document.createElement('div');
-        waterField.id = 'waterField';
-        waterFieldWrap.appendChild(waterField);
-        document.body.appendChild(waterFieldWrap);
-
-        let mouseX = window.innerWidth / 2;
-        let mouseY = window.innerHeight / 2;
-        let fieldX = mouseX,
-            fieldY = mouseY;
-        let waterActive = false;
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            waterActive = true;
-        });
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches && e.touches[0]) {
-                mouseX = e.touches[0].clientX;
-                mouseY = e.touches[0].clientY;
-                waterActive = true;
-            }
-        }, { passive: true });
-
-        function pressWater(px, py, power) {
-            const gx = ((px - fieldX) / waterFieldSize + 0.5) * waterW;
-            const gy = ((py - fieldY) / waterFieldSize + 0.5) * waterH;
-            splatWater(waterCur, waterW, waterH, gx, gy, -waterSettings.strength * power, waterSettings.radius);
-        }
-        document.addEventListener('mousedown', (e) => {
-            waterField.classList.add('pressed');
-            waterActive = true;
-            pressWater(e.clientX, e.clientY, 1);
-        });
-        document.addEventListener('mouseup', () => waterField.classList.remove('pressed'));
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches && e.touches[0]) {
-                waterActive = true;
-                pressWater(e.touches[0].clientX, e.touches[0].clientY, 1);
-            }
-        }, { passive: true });
-
-        function setCursorGooTheme(isDark) {
-            waterField.classList.toggle('light-bg', !isDark);
-        }
-
-        window.addEventListener('resize', () => {
-            waterFieldSize = Math.max(200, Math.min(700, window.innerWidth * 0.62, window.innerHeight * 0.62));
-            document.documentElement.style.setProperty('--water-size', waterFieldSize + 'px');
-        });
-
-        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        let waterMapFrame = 0;
-
-        function animateWater() {
-            const ease = 0.22;
-            fieldX += (mouseX - fieldX) * ease;
-            fieldY += (mouseY - fieldY) * ease;
-            waterFieldWrap.style.transform = `translate(${fieldX}px, ${fieldY}px)`;
-
-            const vx = mouseX - fieldX,
-                vy = mouseY - fieldY;
-            const speed = Math.min(Math.hypot(vx, vy), 60);
-            if (waterActive && speed > 0.6) {
-                const gx = waterW / 2 + (vx / waterFieldSize) * waterW;
-                const gy = waterH / 2 + (vy / waterFieldSize) * waterH;
-                const moveStrength = Math.min(speed * 0.16 * (waterSettings.strength / 16), 7 * (waterSettings.strength /
-                16));
-                const moveRadius = waterSettings.radius * 0.58;
-                splatWater(waterCur, waterW, waterH, gx, gy, -moveStrength, moveRadius);
-            }
-
-            stepWater(waterCur, waterPrev, waterW, waterH, WATER_DAMPING);
-            const tmp = waterCur;
-            waterCur = waterPrev;
-            waterPrev = tmp;
-
-            waterMapFrame++;
-            if (waterMapFrame % 2 === 0) {
-                const url = writeWaterImage(waterCur, waterW, waterH, waterCanvas, waterCtx, waterEdgeFade);
-                if (url) {
-                    waterMapImage.setAttribute('href', url);
-                    waterMapIsFlat = false;
-                } else if (!waterMapIsFlat) {
-                    waterMapImage.removeAttribute('href');
-                    waterMapIsFlat = true;
-                }
-            }
-
-            requestAnimationFrame(animateWater);
-        }
-        if (!reduceMotion) requestAnimationFrame(animateWater);
-
-        // --- apply settings to SVG filter ---
-        function updateDisplaceScale(scale) {
-            WATER_DISPLACE_SCALE = scale;
-            const disp = document.getElementById('waterDisplace');
-            if (disp) disp.setAttribute('scale', String(scale));
-        }
-
-        // --- reinitialize water grid ---
-        function reinitWaterGrid(size) {
-            waterW = Math.max(16, Math.round(size));
-            waterH = waterW;
-            waterCur = new Float32Array(waterW * waterH);
-            waterPrev = new Float32Array(waterW * waterH);
-            // also update the canvas used for rendering
-            const c = document.createElement('canvas');
-            c.width = waterW;
-            c.height = waterH;
-            // replace the old one
-            const oldCanvas = waterCanvas;
-            const oldCtx = waterCtx;
-            // can't easily replace the ctx, so we just keep using the same one
-            // but resize the canvas
-            waterCanvas.width = waterW;
-            waterCanvas.height = waterH;
-            // also update the filter's feImage to match
-            waterMapIsFlat = false;
-            // force a redraw
-            const url = writeWaterImage(waterCur, waterW, waterH, waterCanvas, waterCtx, waterEdgeFade);
-            if (url) {
-                waterMapImage.setAttribute('href', url);
-                waterMapIsFlat = false;
-            }
-        }
-
-        // ============================================================
-        //  SETTINGS MENU — Alt+Q / Alt+Й
-        // ============================================================
-        const settingsOverlay = document.getElementById('settingsOverlay');
-        const settingsClose = document.getElementById('settingsClose');
-        const settingsCloseBtn = document.getElementById('settingsCloseBtn');
-        const settingsReset = document.getElementById('settingsReset');
-
-        const setGrid = document.getElementById('setGrid');
-        const setDamping = document.getElementById('setDamping');
-        const setScale = document.getElementById('setScale');
-        const setStrength = document.getElementById('setStrength');
-        const setRadius = document.getElementById('setRadius');
-        const setFieldSize = document.getElementById('setFieldSize');
-        const setOpacity = document.getElementById('setOpacity');
-
-        const valGrid = document.getElementById('valGrid');
-        const valDamping = document.getElementById('valDamping');
-        const valScale = document.getElementById('valScale');
-        const valStrength = document.getElementById('valStrength');
-        const valRadius = document.getElementById('valRadius');
-        const valFieldSize = document.getElementById('valFieldSize');
-        const valOpacity = document.getElementById('valOpacity');
-
-        let settingsOpen = false;
-
-        function toggleSettings(open) {
-            settingsOpen = (open !== undefined) ? open : !settingsOpen;
-            settingsOverlay.classList.toggle('open', settingsOpen);
-            if (settingsOpen) {
-                // sync UI with current settings
-                setGrid.value = waterSettings.gridSize;
-                valGrid.textContent = waterSettings.gridSize;
-                setDamping.value = Math.round(waterSettings.damping * 1000);
-                valDamping.textContent = waterSettings.damping.toFixed(3);
-                setScale.value = waterSettings.displaceScale;
-                valScale.textContent = waterSettings.displaceScale;
-                setStrength.value = waterSettings.strength;
-                valStrength.textContent = waterSettings.strength;
-                setRadius.value = waterSettings.radius;
-                valRadius.textContent = waterSettings.radius;
-                setFieldSize.value = waterSettings.fieldSize;
-                valFieldSize.textContent = waterSettings.fieldSize;
-                setOpacity.value = Math.round(waterSettings.opacity * 100);
-                valOpacity.textContent = waterSettings.opacity.toFixed(2);
-            }
-        }
-
-        function closeSettings() { if (settingsOpen) toggleSettings(false); }
-
-        // keyboard: Alt+Q / Alt+Й
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'q' || e.key === 'й') {
-                if (e.altKey) {
-                    e.preventDefault();
-                    toggleSettings();
-                }
-            }
-            if (e.key === 'Escape' && settingsOpen) {
-                closeSettings();
-            }
-        });
-
-        settingsClose.addEventListener('click', closeSettings);
-        settingsCloseBtn.addEventListener('click', closeSettings);
-        settingsOverlay.addEventListener('click', (e) => {
-            if (e.target === settingsOverlay) closeSettings();
-        });
-
-        // --- sliders ---
-        function applySetting(updateFn) {
-            updateFn();
-            // only close if user clicks close; we keep panel open for tweaking
-        }
-
-        setGrid.addEventListener('input', () => {
-            const v = parseInt(setGrid.value);
-            valGrid.textContent = v;
-            waterSettings.gridSize = v;
-            reinitWaterGrid(v);
-        });
-
-        setDamping.addEventListener('input', () => {
-            const v = parseInt(setDamping.value) / 1000;
-            valDamping.textContent = v.toFixed(3);
-            waterSettings.damping = v;
-            WATER_DAMPING = v;
-        });
-
-        setScale.addEventListener('input', () => {
-            const v = parseInt(setScale.value);
-            valScale.textContent = v;
-            waterSettings.displaceScale = v;
-            updateDisplaceScale(v);
-        });
-
-        setStrength.addEventListener('input', () => {
-            const v = parseFloat(setStrength.value);
-            valStrength.textContent = v;
-            waterSettings.strength = v;
-        });
-
-        setRadius.addEventListener('input', () => {
-            const v = parseFloat(setRadius.value);
-            valRadius.textContent = v;
-            waterSettings.radius = v;
-        });
-
-        setFieldSize.addEventListener('input', () => {
-            const v = parseInt(setFieldSize.value);
-            valFieldSize.textContent = v;
-            waterSettings.fieldSize = v;
-            waterFieldSize = v;
-            document.documentElement.style.setProperty('--water-size', v + 'px');
-        });
-
-        setOpacity.addEventListener('input', () => {
-            const v = parseInt(setOpacity.value) / 100;
-            valOpacity.textContent = v.toFixed(2);
-            waterSettings.opacity = v;
-            waterField.style.opacity = v;
-        });
-
-        // --- reset ---
-        settingsReset.addEventListener('click', () => {
-            const defaults = { gridSize: 64, damping: 0.982, displaceScale: 46, strength: 16, radius: 5.5,
-                fieldSize: 450, opacity: 0.94 };
-            Object.assign(waterSettings, defaults);
-
-            setGrid.value = defaults.gridSize;
-            valGrid.textContent = defaults.gridSize;
-            setDamping.value = 982;
-            valDamping.textContent = '0.982';
-            setScale.value = defaults.displaceScale;
-            valScale.textContent = defaults.displaceScale;
-            setStrength.value = defaults.strength;
-            valStrength.textContent = defaults.strength;
-            setRadius.value = defaults.radius;
-            valRadius.textContent = defaults.radius;
-            setFieldSize.value = defaults.fieldSize;
-            valFieldSize.textContent = defaults.fieldSize;
-            setOpacity.value = 94;
-            valOpacity.textContent = '0.94';
-
-            WATER_DAMPING = defaults.damping;
-            updateDisplaceScale(defaults.displaceScale);
-            waterFieldSize = defaults.fieldSize;
-            document.documentElement.style.setProperty('--water-size', defaults.fieldSize + 'px');
-            waterField.style.opacity = defaults.opacity;
-            reinitWaterGrid(defaults.gridSize);
-            playSoftClick();
-        });
-
-        // --- transient "drop" ripples ---
         const svgns = 'http://www.w3.org/2000/svg';
         const globalSvgDefs = document.getElementById('globalSvgDefs');
         let dropFilterCounter = 0;
 
         function spawnWaterMorphBurst(x, y) {
-            if (reduceMotion) return;
-            const grid = 64;
-            const boxSize = 300;
-            const id = 'waterDrop' + (dropFilterCounter++);
-            const { canvas, ctx } = makeHeightCanvas(grid);
-
-            const filter = document.createElementNS(svgns, 'filter');
-            filter.setAttribute('id', id);
-            filter.setAttribute('x', '-60%');
-            filter.setAttribute('y', '-60%');
-            filter.setAttribute('width', '220%');
-            filter.setAttribute('height', '220%');
-            filter.setAttribute('color-interpolation-filters', 'sRGB');
-            const feImg = document.createElementNS(svgns, 'feImage');
-            feImg.setAttribute('x', '0');
-            feImg.setAttribute('y', '0');
-            feImg.setAttribute('width', '100%');
-            feImg.setAttribute('height', '100%');
-            feImg.setAttribute('preserveAspectRatio', 'none');
-            feImg.setAttribute('result', 'dropMap');
-            const blur = document.createElementNS(svgns, 'feGaussianBlur');
-            blur.setAttribute('in', 'dropMap');
-            blur.setAttribute('stdDeviation', '1');
-            blur.setAttribute('result', 'dropMapSmooth');
-            const disp = document.createElementNS(svgns, 'feDisplacementMap');
-            disp.setAttribute('in', 'SourceGraphic');
-            disp.setAttribute('in2', 'dropMapSmooth');
-            disp.setAttribute('scale', String(waterSettings.displaceScale * 0.65));
-            disp.setAttribute('xChannelSelector', 'R');
-            disp.setAttribute('yChannelSelector', 'G');
-            filter.appendChild(feImg);
-            filter.appendChild(blur);
-            filter.appendChild(disp);
-            globalSvgDefs.appendChild(filter);
-
-            const el = document.createElement('div');
-            el.className = 'water-drop';
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            el.style.width = boxSize + 'px';
-            el.style.height = boxSize + 'px';
-            el.style.marginLeft = (-boxSize / 2) + 'px';
-            el.style.marginTop = (-boxSize / 2) + 'px';
-            el.style.backdropFilter = `url(#${id})`;
-            el.style.webkitBackdropFilter = `url(#${id})`;
-            document.body.appendChild(el);
-
-            const height = new Float32Array(grid * grid);
-            const start = performance.now();
-            const duration = 850;
-            const cx = grid / 2,
-                cy = grid / 2;
-
-            function frame(now) {
-                const t = Math.min(1, (now - start) / duration);
-                const ringR = t * (grid * 0.46);
-                const amp = (1 - t) * 46;
-                const spread = 2.6 + t * 3;
-                for (let gy = 0; gy < grid; gy++) {
-                    for (let gx = 0; gx < grid; gx++) {
-                        const r = Math.hypot(gx - cx, gy - cy);
-                        const d = r - ringR;
-                        height[gy * grid + gx] = amp * Math.exp(-(d * d) / (2 * spread * spread)) * Math.cos(d * 1.1);
-                    }
-                }
-                const url = writeWaterImage(height, grid, grid, canvas, ctx, null);
-                if (url) feImg.setAttribute('href', url);
-
-                if (t < 1) {
-                    requestAnimationFrame(frame);
-                } else {
-                    el.remove();
-                    filter.remove();
-                }
-            }
-            requestAnimationFrame(frame);
+            // Функция больше не используется
         }
 
         // ============================================================
@@ -3553,16 +2706,10 @@
         }, { once: true });
 
         showPage('pageStart');
-        document.addEventListener('click', () => {
-            bgMusic.play().catch(() => {});
-        }, { once: true });
-
-        // Apply initial displacement scale from settings
-        updateDisplaceScale(waterSettings.displaceScale);
-        waterField.style.opacity = waterSettings.opacity;
 
         console.log('✦ Подарок ✦');
-        console.log('Нажмите Alt+Q (или Alt+Й) для настроек жидкости курсора');
+        console.log('Все системы работают — жидкость удалена.');
+        console.log('✦ МОРЕ ВНУТРИ автоматически включится после первого сбора пазла "Дом на берегу моря"');
     </script>
 </body>
 </html>
