@@ -22,6 +22,67 @@
             position: relative;
         }
 
+        /* ===== LOADING SCREEN ===== */
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #222;
+            text-align: center;
+            padding: 20px;
+        }
+        #loadingScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loadingScreen .loader {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+        #loadingScreen .loader span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #222;
+            border-radius: 50%;
+            animation: bounce 1.2s ease-in-out infinite;
+        }
+        #loadingScreen .loader span:nth-child(2) { animation-delay: 0.15s; }
+        #loadingScreen .loader span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        #loadingScreen .status {
+            font-size: 16px;
+            letter-spacing: 0.06em;
+            font-weight: 300;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+        #loadingScreen .progress-bar {
+            width: 200px;
+            height: 2px;
+            background: #e0e0e0;
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        #loadingScreen .progress-bar .fill {
+            height: 100%;
+            width: 0%;
+            background: #222;
+            transition: width 0.2s linear;
+        }
+
         /* ===== TOP BAR ===== */
         #topBar {
             position: fixed;
@@ -604,7 +665,6 @@
         .piece.dragging img {
             filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.7));
         }
-        /* Убираем анимацию появления/исчезновения кусочков — мгновенное исчезновение */
         .piece.placed {
             opacity: 0;
             transform: scale(0.6);
@@ -717,6 +777,13 @@
                 font-size: clamp(18px, 4.5vw, 28px);
                 padding: 20px;
             }
+            #loadingScreen .loader span {
+                width: 10px;
+                height: 10px;
+            }
+            #loadingScreen .progress-bar {
+                width: 150px;
+            }
         }
         @media (max-width: 400px) {
             .piece {
@@ -737,6 +804,19 @@
     </style>
 </head>
 <body>
+
+    <!-- ===== LOADING SCREEN ===== -->
+    <div id="loadingScreen">
+        <div class="loader">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="status" id="loadingStatus">Загрузка …</div>
+        <div class="progress-bar">
+            <div class="fill" id="loadingProgress"></div>
+        </div>
+    </div>
 
     <!-- ===== SVG DEFS (для водяных эффектов) ===== -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -902,6 +982,82 @@
         const vnutriMusic = $('vnutriMusic');
         const abstractTextOverlay = $('abstractTextOverlay');
         const abstractHint = $('abstractHint');
+
+        // ============================================================
+        //  LOADING SCREEN
+        // ============================================================
+        const loadingScreen = $('loadingScreen');
+        const loadingStatus = $('loadingStatus');
+        const loadingProgress = $('loadingProgress');
+
+        function updateLoading(loaded, total) {
+            const percent = Math.round((loaded / total) * 100);
+            loadingProgress.style.width = percent + '%';
+            loadingStatus.textContent = `Загрузка … ${percent}%`;
+        }
+
+        function hideLoading() {
+            loadingScreen.classList.add('hidden');
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 1000);
+        }
+
+        // ============================================================
+        //  PRELOAD IMAGES
+        // ============================================================
+        function preloadImages() {
+            const imageList = [
+                // puzzle steps (0–4)
+                'media/step_0000.jpg',
+                'media/step_0001.jpg',
+                'media/step_0002.jpg',
+                'media/step_0003.jpg',
+                'media/step_0004.jpg',
+                // puzzle pieces
+                'media/peace_0000.png',
+                'media/peace_0001.png',
+                'media/peace_0002.png',
+                'media/peace_0003.png',
+                // gift puzzle steps (0–3)
+                'media/cherepaha_step_0000.jpg',
+                'media/cherepaha_step_0001.jpg',
+                'media/cherepaha_step_0002.jpg',
+                'media/cherepaha_step_0003.jpg',
+                // gift puzzle pieces
+                'media/cherepaha_peace_0000.png',
+                'media/cherepaha_peace_0001.png',
+                'media/cherepaha_peace_0002.png',
+                // gift image
+                'media/cherepaha_more.jpg',
+            ];
+
+            const total = imageList.length;
+            let loaded = 0;
+
+            return new Promise((resolve) => {
+                if (total === 0) {
+                    resolve();
+                    return;
+                }
+
+                imageList.forEach((src) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loaded++;
+                        updateLoading(loaded, total);
+                        if (loaded === total) resolve();
+                    };
+                    img.onerror = () => {
+                        // всё равно считаем загруженным, чтобы не зависнуть
+                        loaded++;
+                        updateLoading(loaded, total);
+                        if (loaded === total) resolve();
+                    };
+                    img.src = src;
+                });
+            });
+        }
 
         // ============================================================
         //  AUDIO
@@ -2332,7 +2488,6 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placePiece(idx);
-                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             dragData = null;
@@ -2387,7 +2542,6 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placePiece(idx);
-                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             dragData = null;
@@ -2397,7 +2551,6 @@
             if (idx !== puzzlePiecesPlaced) return;
             puzzlePiecesPlaced++;
             puzzleStep = puzzlePiecesPlaced;
-            // Выключаем ripple-эффект — передаём false
             loadPuzzleStep(puzzleStep, false);
             const pieces = puzzlePieces.querySelectorAll('.piece');
             pieces.forEach((p, i) => {
@@ -2549,7 +2702,6 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placeGiftPiece(idx);
-                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             giftDragData = null;
@@ -2604,7 +2756,6 @@
             if (cx >= rect.left && cx <= rect.right &&
                 cy >= rect.top && cy <= rect.bottom) {
                 placeGiftPiece(idx);
-                // Эффект водяного взрыва УДАЛЁН
             }
             clone.remove();
             giftDragData = null;
@@ -2614,7 +2765,6 @@
             if (idx !== giftPuzzlePiecesPlaced) return;
             giftPuzzlePiecesPlaced++;
             giftPuzzleStep = giftPuzzlePiecesPlaced;
-            // Выключаем ripple-эффект — передаём false
             loadGiftPuzzleStep(giftPuzzleStep, false);
             const pieces = giftPuzzlePieces.querySelectorAll('.piece');
             pieces.forEach((p, i) => {
@@ -2661,7 +2811,7 @@
         let dropFilterCounter = 0;
 
         function spawnWaterMorphBurst(x, y) {
-            // Функция больше не используется
+            // функция не используется
         }
 
         // ============================================================
@@ -2700,12 +2850,21 @@
         // ============================================================
         //  INIT
         // ============================================================
-        document.addEventListener('click', () => {
-            initAudio();
-            bgMusic.play().catch(() => {});
-        }, { once: true });
+        // Сначала предзагружаем все изображения, затем показываем страницу
+        preloadImages().then(() => {
+            hideLoading();
+            // Стартовая страница уже активна, показываем её
+            showPage('pageStart');
+            // Автоматически запускаем фоновую музыку при первом клике (уже есть обработчик)
+            document.addEventListener('click', () => {
+                initAudio();
+                bgMusic.play().catch(() => {});
+            }, { once: true });
+        });
 
-        showPage('pageStart');
+        // Но мы также должны убедиться, что страница не будет активна до загрузки
+        // У нас #pageStart уже имеет класс active, но экран загрузки перекрывает его.
+        // После hideLoading всё станет видимым.
 
         console.log('✦ Подарок ✦');
         console.log('Все системы работают — жидкость удалена.');
