@@ -1441,6 +1441,11 @@
         // ============================================================
         function preloadImages() {
             const imageList = [
+                // Шош (кадры персонажа) — грузим первыми в приоритете,
+                // чтобы он уже нормально выглядел на экране загрузки
+                // (он спавнится сразу на DOMContentLoaded, ещё до
+                // завершения предзагрузки остальных картинок).
+                ...SHOSH_FRAME_NUMBERS.map(n => `media/shosh/shime${n}.png`),
                 // puzzle steps (0–4)
                 'media/step_0000.jpg',
                 'media/step_0001.jpg',
@@ -1463,8 +1468,6 @@
                 'media/cherepaha_peace_0002.png',
                 // gift image
                 'media/cherepaha_more.jpg',
-                // Шош (кадры персонажа)
-                ...SHOSH_FRAME_NUMBERS.map(n => `media/shosh/shime${n}.png`),
             ];
 
             loadState.total = imageList.length;
