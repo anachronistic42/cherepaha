@@ -2298,8 +2298,8 @@
             if (state.page !== 'abstract') return;
             const rect = abstractCanvas.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
-            const mx = (e.clientX - rect.left) * (rect.width / (rect.width * dpr));
-            const my = (e.clientY - rect.top) * (rect.height / (rect.height * dpr));
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
             const w = rect.width;
             const h = rect.height;
 
@@ -2314,8 +2314,7 @@
                     const sh = sq.h * scaleY;
                     if (mx >= sx - sw / 2 && mx <= sx + sw / 2 &&
                         my >= sy - sh / 2 && my <= sy + sh / 2) {
-                        playSoftClick();
-                        advanceAbstractText();
+                        activateAbstractSquareTextMode();
                         return;
                     }
                 }
@@ -2335,44 +2334,7 @@
                     const sh = sq.h * scaleY;
                     if (mx >= sx - sw / 2 && mx <= sx + sw / 2 &&
                         my >= sy - sh / 2 && my <= sy + sh / 2) {
-                        playDeepImpact(0.18);
-                        state.abstractClickCount++;
-                        if (state.abstractClickCount >= 2) {
-                            abstractIsInverted = true;
-                            state.isInverted = true;
-                            abstractTextOverlay.classList.remove('dark-text');
-                            abstractTextOverlay.textContent = '';
-                            abstractTextOverlay.classList.remove('show');
-                            playDing(0.3);
-                            const flash = document.createElement('div');
-                            flash.style.cssText =
-                                'position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;pointer-events:none;transition:opacity 0.3s ease;opacity:0.7;';
-                            document.body.appendChild(flash);
-                            setTimeout(() => { flash.style.opacity = '0';
-                                setTimeout(() => flash.remove(), 400); }, 200);
-                            setTimeout(() => {
-                                state.isAbstractTextMode = true;
-                                state.abstractTextIndex = 0;
-                                showAbstractTextLine();
-                                abstractHint.textContent = '';
-                                abstractHint.classList.add('show');
-                                abstractHint.classList.remove('dark');
-                            }, 500);
-                        } else {
-                            state.abstractComposition++;
-                            const rect2 = abstractCanvas.parentElement.getBoundingClientRect();
-                            const w2 = rect2.width;
-                            const h2 = rect2.height;
-                            abstractShapes = generateAbstractComposition(w2, h2, state.abstractComposition);
-                            drawAbstractShapes(ctx, w2, h2, abstractShapes, false);
-                            playWoosh(0.12);
-                            const flash2 = document.createElement('div');
-                            flash2.style.cssText =
-                                'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;pointer-events:none;transition:opacity 0.2s ease;opacity:0.25;';
-                            document.body.appendChild(flash2);
-                            setTimeout(() => { flash2.style.opacity = '0';
-                                setTimeout(() => flash2.remove(), 300); }, 150);
-                        }
+                        activateAbstractSquareNormalMode();
                         return;
                     }
                 }
@@ -2384,6 +2346,73 @@
             } else {
                 pushShapesAway(abstractShapes, mx, my, w, h, 50);
                 playWoosh(0.03);
+            }
+        });
+
+        // Логика активации чёрного квадрата (текстовый режим) — вынесена в
+        // отдельную функцию, чтобы её можно было вызвать и по клику, и по
+        // нажатию клавиши "R"/"К".
+        function activateAbstractSquareTextMode() {
+            playSoftClick();
+            advanceAbstractText();
+        }
+
+        // Логика активации чёрного квадрата (обычный режим) — вынесена в
+        // отдельную функцию по той же причине.
+        function activateAbstractSquareNormalMode() {
+            playDeepImpact(0.18);
+            state.abstractClickCount++;
+            if (state.abstractClickCount >= 2) {
+                abstractIsInverted = true;
+                state.isInverted = true;
+                abstractTextOverlay.classList.remove('dark-text');
+                abstractTextOverlay.textContent = '';
+                abstractTextOverlay.classList.remove('show');
+                playDing(0.3);
+                const flash = document.createElement('div');
+                flash.style.cssText =
+                    'position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;pointer-events:none;transition:opacity 0.3s ease;opacity:0.7;';
+                document.body.appendChild(flash);
+                setTimeout(() => { flash.style.opacity = '0';
+                    setTimeout(() => flash.remove(), 400); }, 200);
+                setTimeout(() => {
+                    state.isAbstractTextMode = true;
+                    state.abstractTextIndex = 0;
+                    showAbstractTextLine();
+                    abstractHint.textContent = '';
+                    abstractHint.classList.add('show');
+                    abstractHint.classList.remove('dark');
+                }, 500);
+            } else {
+                state.abstractComposition++;
+                const rect2 = abstractCanvas.parentElement.getBoundingClientRect();
+                const w2 = rect2.width;
+                const h2 = rect2.height;
+                abstractShapes = generateAbstractComposition(w2, h2, state.abstractComposition);
+                drawAbstractShapes(ctx, w2, h2, abstractShapes, false);
+                playWoosh(0.12);
+                const flash2 = document.createElement('div');
+                flash2.style.cssText =
+                    'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;pointer-events:none;transition:opacity 0.2s ease;opacity:0.25;';
+                document.body.appendChild(flash2);
+                setTimeout(() => { flash2.style.opacity = '0';
+                    setTimeout(() => flash2.remove(), 300); }, 150);
+            }
+        }
+
+        // Клавиша "R" (в русской раскладке — "К", та же физическая клавиша)
+        // как эквивалент клика по чёрному квадрату в абстракции.
+        document.addEventListener('keydown', (e) => {
+            if (state.page !== 'abstract') return;
+            const isRKey = e.code === 'KeyR' || e.key === 'r' || e.key === 'R' ||
+                e.key === 'к' || e.key === 'К';
+            if (!isRKey) return;
+            if (e.repeat) return;
+            e.preventDefault();
+            if (state.isAbstractTextMode) {
+                activateAbstractSquareTextMode();
+            } else if (!abstractIsInverted) {
+                activateAbstractSquareNormalMode();
             }
         });
 
