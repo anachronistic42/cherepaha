@@ -1116,12 +1116,12 @@
         <span class="title" id="topBarTitle">Подарок</span>
         <div class="rightBtns">
             <button class="topBtn musicBtn" id="btnMusic">♪ МОРЕ ВНУТРИ</button>
-            <button class="topBtn" id="btnHome">К началу</button>
-            <button class="topBtn" id="btnAbstract">К абстракциям</button>
+            <button class="topBtn" id="btnHome">Кто ты?</button>
+            <button class="topBtn" id="btnAbstract">Абстракции</button>
             <button class="topBtn" id="btnStory">Путешествия Черепахи</button>
-            <button class="topBtn" id="btnHouse">"Дом на берегу моря"</button>
+            <button class="topBtn" id="btnHouse">Симулякр подарка "Дом на берегу моря"</button>
             <button class="topBtn" id="btnGift">ДОПОЛНИТЕЛЬНЫЙ ПОДАРОК. СДЕЛАННЫЙ 100% БЕЗ НЕЙРОНОК</button>
-            <button class="topBtn" id="btnLoadingScreen">К экрану загрузки</button>
+            <button class="topBtn" id="btnLoadingScreen">Экран загрузки</button>
             <button class="topBtn iconBtn show" id="btnFullscreen" title="Полный экран">⛶</button>
         </div>
     </header>
@@ -2493,6 +2493,67 @@
             }, 500);
         }
 
+        // Экран "Подарок получен": чёрный экран медленно (3с) становится белым,
+        // на нём проступает надпись, ещё через 3с появляется кнопка перехода
+        // к пазлу "Дом на берегу моря". По клику белый экран растворяется.
+        function giftReceivedTransition(callback) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText =
+                'position:fixed;inset:0;z-index:99999;background-color:#000;opacity:0;' +
+                'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
+                'padding:40px;box-sizing:border-box;text-align:center;' +
+                'transition:opacity 0.45s ease;pointer-events:none;';
+            document.body.appendChild(overlay);
+
+            const msg = document.createElement('div');
+            msg.textContent = 'Подарок "Дом на берегу моря" получен';
+            msg.style.cssText =
+                'font-family:Georgia,"Times New Roman",serif;color:#111;' +
+                'font-size:clamp(22px,4vw,42px);font-weight:400;line-height:1.5;' +
+                'letter-spacing:0.02em;max-width:900px;';
+            overlay.appendChild(msg);
+
+            const btn = document.createElement('button');
+            btn.textContent = 'Перейти к визуальному симулякру подарка "Дом на берегу моря"';
+            btn.style.cssText =
+                'margin-top:50px;background:transparent;border:1px solid rgba(0,0,0,0.35);' +
+                'color:#111;font-family:inherit;font-size:clamp(15px,2vw,20px);' +
+                'padding:18px 32px;cursor:pointer;letter-spacing:0.02em;' +
+                'opacity:0;pointer-events:none;transition:opacity 0.9s ease,background 0.25s ease,transform 0.25s ease;';
+            btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(0,0,0,0.06)'; });
+            btn.addEventListener('mouseleave', () => { btn.style.background = 'transparent'; });
+            overlay.appendChild(btn);
+
+            // 1) чёрный экран появляется
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
+
+            setTimeout(() => {
+                // страница с пазлом готовится позади оверлея, пока он полностью чёрный
+                if (callback) callback();
+
+                // 2) чёрный экран медленно (3с) становится белым — надпись проступает
+                overlay.style.transition = 'background-color 3s ease';
+                overlay.style.backgroundColor = '#fff';
+
+                // 3) через ещё 3с после начала проявления белого — кнопка
+                setTimeout(() => {
+                    btn.style.opacity = '1';
+                    btn.style.pointerEvents = 'auto';
+                }, 3000);
+            }, 500);
+
+            // 4) по клику — белый экран растворяется, открывая пазл позади него
+            btn.addEventListener('click', () => {
+                playSoftClick();
+                btn.style.pointerEvents = 'none';
+                overlay.style.transition = 'opacity 0.9s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 950);
+            });
+        }
+
         function resetFsButtonAndContent() {
             fsBtn.innerHTML = fsBtnClicked ?
                 'Метафизический<br>"Дом на берегу моря"' :
@@ -2638,7 +2699,7 @@
             playWoosh(0.1);
 
             setTimeout(() => {
-                blackFadeTransitionOverlay(() => {
+                giftReceivedTransition(() => {
                     goToPuzzle();
                     fsContent.style.filter = '';
                     fsContent.style.transform = '';
